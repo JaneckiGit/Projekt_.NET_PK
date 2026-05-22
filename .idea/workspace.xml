@@ -1,39 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="2ddbfc9c-173e-4a5e-b72d-371ab1583667" name="Changes" comment="" />
+    <list default="true" id="2ddbfc9c-173e-4a5e-b72d-371ab1583667" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/Views/Shared/_Layout.cshtml" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/Views/Shared/_Layout.cshtml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/bin/Debug/net10.0/ClinicManager.dll" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/bin/Debug/net10.0/ClinicManager.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/bin/Debug/net10.0/ClinicManager.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/bin/Debug/net10.0/ClinicManager.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.AssemblyInfoInputs.cache" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.dll" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.sourcelink.json" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ClinicManager.sourcelink.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ref/ClinicManager.dll" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/ref/ClinicManager.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/refint/ClinicManager.dll" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/refint/ClinicManager.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/rjsmcshtml.dswa.cache.json" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/rjsmcshtml.dswa.cache.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/rjsmrazor.dswa.cache.json" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/rjsmrazor.dswa.cache.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/rpswa.dswa.cache.json" beforeDir="false" afterPath="$PROJECT_DIR$/ClinicManager/ClinicManager/obj/Debug/net10.0/rpswa.dswa.cache.json" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="7" />
+    <option name="cachedIndexableFilesCount" value="100" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "JaneckiGit"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;JaneckiGit&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/JaneckiGit/Projekt_.NET_PK.git",
-    "accountId": "a1fb5808-04e5-43a9-9995-452cf89b5137"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/JaneckiGit/Projekt_.NET_PK.git&quot;,
+    &quot;accountId&quot;: &quot;a1fb5808-04e5-43a9-9995-452cf89b5137&quot;
   }
-}]]></component>
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Controllers/AccountController.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Data/ApplicationDbContext.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Models/ApplicationUser.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Models/ViewModels/LoginViewModel.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Models/ViewModels/RegisterViewModel.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Program.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Views/Account/AccessDenied.cshtml" root0="FORCE_HIGHLIGHTING" root1="SKIP_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Views/Account/Login.cshtml" root0="FORCE_HIGHLIGHTING" root1="SKIP_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Views/Account/Register.cshtml" root0="FORCE_HIGHLIGHTING" root1="SKIP_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Views/Shared/_Layout.cshtml" root0="FORCE_HIGHLIGHTING" root1="SKIP_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/ClinicManager/ClinicManager/Views/_ViewImports.cshtml" root0="FORCE_HIGHLIGHTING" root1="SKIP_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 1
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
   <component name="ProjectId" id="3E2KpgyGRkOVl08pDMLk599o7uR" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -47,7 +78,13 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "dev",
     "junie.onboarding.icon.badge.shown": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -60,6 +97,7 @@
       <option name="presentableId" value="Default" />
       <updated>1779371408666</updated>
       <workItem from="1779371409795" duration="147000" />
+      <workItem from="1779404071760" duration="2843000" />
     </task>
     <task id="LOCAL-00001" summary="Add IntelliJ IDEA project configuration files to .idea directory">
       <option name="closed" value="true" />
@@ -77,6 +115,17 @@
   </component>
   <component name="UnityCheckinConfiguration" checkUnsavedScenes="true" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Add IntelliJ IDEA project configuration files to .idea directory" />
