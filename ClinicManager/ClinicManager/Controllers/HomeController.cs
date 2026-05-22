@@ -1,9 +1,11 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using ClinicManager.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ClinicManager.Controllers;
 
+[Authorize]
 public class HomeController : Controller
 {
     public IActionResult Index()

@@ -23,29 +23,22 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    @if (User.Identity!.IsAuthenticated)
+                    @if (User.IsInRole("Admin"))
                     {
                         <li class="nav-item">
-                            <span class="nav-link text-dark">Zalogowany: @User.Identity.Name</span>
-                        </li>
-                        <li class="nav-item">
-                            <form asp-controller="Account" asp-action="Logout" method="post">
-                                <button type="submit" class="nav-link btn btn-link text-dark">Wyloguj</button>
-                            </form>
+                            <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Panel Admina</a>
                         </li>
                     }
-                    else
+                    @if (User.IsInRole("Lekarz") || User.IsInRole("Admin"))
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Logowanie</a>
+                            <a class="nav-link text-dark" asp-controller="Doctor" asp-action="Index">Panel Lekarza</a>
                         </li>
+                    }
+                    @if (User.IsInRole("Rejestratorka") || User.IsInRole("Admin"))
+                    {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Rejestracja</a>
+                            <a class="nav-link text-dark" asp-controller="Reception" asp-action="Index">Rejestracja</a>
                         </li>
                     }
                 </ul>
