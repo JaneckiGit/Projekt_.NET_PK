@@ -31,3 +31,11 @@ System zarządzania przychodnią medyczną – projekt zaliczeniowy ASP.NET Core
 ├── wwwroot/uploads/
 ├── Data/
 ├── Program.cs
+
+## CI/CD (GitHub Actions)
+Projekt wykorzystuje GitHub Actions do automatyzacji procesów (CI/CD)
+Konfiguracja znajduje się w pliku `.github/workflows/dotnet-ci.yml`.
+
+Główne etapy pipeline'u uruchamiane przy każdym *pushu* lub *pull requeście*:
+1. **Build** (`dotnet build`) – sprawdzanie, czy projekt kompiluje się bez błędów.
+2. **Test** (`dotnet test`) – automatyczne wykonywanie testów jednostkowych i integracyjnych.
