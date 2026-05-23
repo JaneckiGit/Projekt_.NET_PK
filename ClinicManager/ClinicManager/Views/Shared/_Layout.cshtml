@@ -42,6 +42,29 @@
                         </li>
                     }
                 </ul>
+                <ul class="navbar-nav">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <li class="nav-item d-flex align-items-center me-2">
+                            <span class="navbar-text">@User.Identity!.Name</span>
+                        </li>
+                        <li class="nav-item">
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-link nav-link text-dark">Wyloguj</button>
+                            </form>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Zaloguj</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Zarejestruj</a>
+                        </li>
+                    }
+                </ul>
             </div>
         </div>
     </nav>
