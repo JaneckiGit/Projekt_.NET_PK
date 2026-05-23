@@ -21,6 +21,7 @@ System zarządzania przychodnią medyczną – projekt zaliczeniowy ASP.NET Core
 4. Uruchom projekt: `dotnet run`
 
 ## Struktura projektu
+```
 /ClinicManager
 ├── Controllers/
 ├── DTOs/
@@ -31,7 +32,7 @@ System zarządzania przychodnią medyczną – projekt zaliczeniowy ASP.NET Core
 ├── wwwroot/uploads/
 ├── Data/
 ├── Program.cs
-
+```
 ## CI/CD (GitHub Actions)
 Projekt wykorzystuje GitHub Actions do automatyzacji procesów (CI/CD)
 Konfiguracja znajduje się w pliku `.github/workflows/dotnet-ci.yml`.
