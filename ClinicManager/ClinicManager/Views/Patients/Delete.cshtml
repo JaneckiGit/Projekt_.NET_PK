@@ -1,0 +1,28 @@
+@model PatientDto
+@{
+    ViewData["Title"] = "Usuń pacjenta";
+}
+
+<h2 class="text-danger">Usuń pacjenta</h2>
+
+<div class="alert alert-warning">
+    <strong>RODO:</strong> Pacjent zostanie oznaczony jako usunięty.
+    Rekord pozostanie w bazie zgodnie z polityką retencji danych medycznych.
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Imię i nazwisko</dt>
+    <dd class="col-sm-9">@Model.FirstName @Model.LastName</dd>
+
+    <dt class="col-sm-3">PESEL</dt>
+    <dd class="col-sm-9">@Model.Pesel</dd>
+
+    <dt class="col-sm-3">Nr ubezpieczenia</dt>
+    <dd class="col-sm-9">@Model.InsuranceNumber</dd>
+</dl>
+
+<form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-danger">Tak, usuń</button>
+    <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+</form>

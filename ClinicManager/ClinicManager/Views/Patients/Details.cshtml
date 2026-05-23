@@ -1,0 +1,40 @@
+@model PatientDto
+@{
+    ViewData["Title"] = $"Pacjent: {Model.FirstName} {Model.LastName}";
+}
+
+<h2>@Model.FirstName @Model.LastName</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">PESEL</dt>
+    <dd class="col-sm-9">@Model.Pesel</dd>
+
+    <dt class="col-sm-3">Nr ubezpieczenia</dt>
+    <dd class="col-sm-9">@Model.InsuranceNumber</dd>
+
+    <dt class="col-sm-3">Data urodzenia</dt>
+    <dd class="col-sm-9">@Model.DateOfBirth.ToString("yyyy-MM-dd")</dd>
+
+    <dt class="col-sm-3">Telefon</dt>
+    <dd class="col-sm-9">@(Model.PhoneNumber ?? "-")</dd>
+
+    <dt class="col-sm-3">E-mail</dt>
+    <dd class="col-sm-9">@(Model.Email ?? "-")</dd>
+
+    <dt class="col-sm-3">Adres</dt>
+    <dd class="col-sm-9">@(Model.Address ?? "-")</dd>
+
+    <dt class="col-sm-3">Utworzono</dt>
+    <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+
+    @if (Model.UpdatedAt.HasValue)
+    {
+        <dt class="col-sm-3">Ostatnia aktualizacja</dt>
+        <dd class="col-sm-9">@Model.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+    }
+</dl>
+
+<div class="d-flex gap-2">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edytuj</a>
+    <a asp-action="Index" class="btn btn-secondary">Powrót</a>
+</div>
