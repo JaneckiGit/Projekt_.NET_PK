@@ -35,8 +35,13 @@ builder.Services.AddAuthorization(options =>
         .Build();
 });
 
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddSingleton<PatientMapper>();
+builder.Services.AddSingleton<MedicalRecordMapper>();
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IMedicalRecordAccessLogger, MedicalRecordAccessLogger>();
+builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 
 builder.Services.AddControllersWithViews();
 
