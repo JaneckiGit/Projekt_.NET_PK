@@ -4,9 +4,17 @@
     var query = ViewData["Query"] as string;
 }
 
+@{
+    var canManage = User.IsInRole("Rejestratorka") || User.IsInRole("Admin");
+    var canViewRecord = User.IsInRole("Lekarz") || User.IsInRole("Admin");
+}
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Pacjenci</h2>
-    <a asp-action="Create" class="btn btn-primary">Dodaj pacjenta</a>
+    @if (canManage)
+    {
+        <a asp-action="Create" class="btn btn-primary">Dodaj pacjenta</a>
+    }
 </div>
 
 @if (TempData["Success"] is string success)
@@ -54,8 +62,16 @@ else
                 <td>@p.PhoneNumber</td>
                 <td class="text-end">
                     <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary">Szczegóły</a>
-                    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">Edytuj</a>
-                    <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger">Usuń</a>
+                    @if (canViewRecord)
+                    {
+                        <a asp-controller="MedicalRecords" asp-action="Details" asp-route-patientId="@p.Id"
+                           class="btn btn-sm btn-outline-success">Kartoteka</a>
+                    }
+                    @if (canManage)
+                    {
+                        <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">Edytuj</a>
+                        <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger">Usuń</a>
+                    }
                 </td>
             </tr>
         }

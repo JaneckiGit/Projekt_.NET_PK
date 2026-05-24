@@ -35,6 +35,15 @@
 </dl>
 
 <div class="d-flex gap-2">
-    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edytuj</a>
+    @if (User.IsInRole("Lekarz") || User.IsInRole("Admin"))
+    {
+        <a asp-controller="MedicalRecords" asp-action="Details" asp-route-patientId="@Model.Id" class="btn btn-success">
+            Kartoteka medyczna
+        </a>
+    }
+    @if (User.IsInRole("Rejestratorka") || User.IsInRole("Admin"))
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edytuj</a>
+    }
     <a asp-action="Index" class="btn btn-secondary">Powrót</a>
 </div>

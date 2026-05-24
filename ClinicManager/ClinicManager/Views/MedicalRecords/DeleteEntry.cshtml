@@ -1,0 +1,42 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@model MedicalEntryDto
+@{
+    ViewData["Title"] = "Usun wpis";
+
+    string DisplayEnum(Enum value)
+    {
+        var name = value.ToString();
+        var member = value.GetType().GetMember(name).FirstOrDefault();
+        return member?.GetCustomAttribute<DisplayAttribute>()?.Name ?? name;
+    }
+}
+
+<h2 class="text-danger">Usun wpis z kartoteki</h2>
+
+<div class="alert alert-warning">
+    Wpis zostanie trwale usuniety z kartoteki. Operacja zostanie zalogowana (RODO).
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Data</dt>
+    <dd class="col-sm-9">@Model.EntryDate.ToString("yyyy-MM-dd")</dd>
+
+    <dt class="col-sm-3">Typ</dt>
+    <dd class="col-sm-9">@DisplayEnum(Model.Type)</dd>
+
+    <dt class="col-sm-3">Tytul</dt>
+    <dd class="col-sm-9">@Model.Title</dd>
+
+    <dt class="col-sm-3">Autor</dt>
+    <dd class="col-sm-9">@Model.AuthorDisplayName</dd>
+
+    <dt class="col-sm-3">Tresc</dt>
+    <dd class="col-sm-9"><pre class="mb-0">@Model.Content</pre></dd>
+</dl>
+
+<form asp-action="DeleteEntry" asp-route-entryId="@Model.Id" method="post" class="d-flex gap-2">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-danger">Tak, usun wpis</button>
+    <a asp-action="Details" asp-route-patientId="@Model.PatientId" class="btn btn-secondary">Anuluj</a>
+</form>

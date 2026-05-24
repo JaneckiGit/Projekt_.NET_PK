@@ -3,4 +3,20 @@
 }
 
 <h2>Panel Lekarza</h2>
-<p>Dostępne dla lekarza i admina.</p>
+<p class="text-muted">Dostepne dla lekarza i admina.</p>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Pacjenci</h5>
+                <p class="card-text text-muted">
+                    Przegladaj liste pacjentow i otwieraj ich kartoteki medyczne.
+                </p>
+                <a asp-controller="Patients" asp-action="Index" class="btn btn-primary">
+                    Lista pacjentow
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManager.Controllers;
 
-[Authorize(Roles = Roles.Rejestratorka + "," + Roles.Admin)]
+[Authorize]
 public class PatientsController : Controller
 {
+    private const string ManagePatientsRoles = Roles.Rejestratorka + "," + Roles.Admin;
+
     private readonly IPatientService _patients;
 
     public PatientsController(IPatientService patients)
@@ -17,6 +19,7 @@ public class PatientsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = ManagePatientsRoles + "," + Roles.Lekarz)]
     public async Task<IActionResult> Index(string? q, CancellationToken ct)
     {
         ViewData["Query"] = q;
@@ -25,6 +28,7 @@ public class PatientsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = ManagePatientsRoles + "," + Roles.Lekarz)]
     public async Task<IActionResult> Details(int id, CancellationToken ct)
     {
         var dto = await _patients.GetByIdAsync(id, ct);
@@ -33,10 +37,12 @@ public class PatientsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = ManagePatientsRoles)]
     public IActionResult Create() => View(new PatientFormDto());
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = ManagePatientsRoles)]
     public async Task<IActionResult> Create(PatientFormDto dto, CancellationToken ct)
     {
         if (!ModelState.IsValid) return View(dto);
@@ -53,6 +59,7 @@ public class PatientsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = ManagePatientsRoles)]
     public async Task<IActionResult> Edit(int id, CancellationToken ct)
     {
         var form = await _patients.GetFormByIdAsync(id, ct);
@@ -63,6 +70,7 @@ public class PatientsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = ManagePatientsRoles)]
     public async Task<IActionResult> Edit(int id, PatientFormDto dto, CancellationToken ct)
     {
         if (id != dto.Id) return BadRequest();
@@ -82,6 +90,7 @@ public class PatientsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = ManagePatientsRoles)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         var dto = await _patients.GetByIdAsync(id, ct);
@@ -91,6 +100,7 @@ public class PatientsController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = ManagePatientsRoles)]
     public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken ct)
     {
         var ok = await _patients.SoftDeleteAsync(id, ct);

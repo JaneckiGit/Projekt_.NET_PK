@@ -1,0 +1,140 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@model MedicalRecordDto
+@{
+    ViewData["Title"] = $"Kartoteka: {Model.PatientFirstName} {Model.PatientLastName}";
+
+    string DisplayEnum(Enum value)
+    {
+        var name = value.ToString();
+        var member = value.GetType().GetMember(name).FirstOrDefault();
+        var display = member?.GetCustomAttribute<DisplayAttribute>()?.Name;
+        return display ?? name;
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">Kartoteka medyczna</h2>
+        <div class="text-muted">
+            @Model.PatientLastName @Model.PatientFirstName <span class="text-muted">(PESEL: @Model.PatientPesel)</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Patients" asp-action="Details" asp-route-id="@Model.PatientId" class="btn btn-outline-secondary">
+            Powrot do pacjenta
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Podsumowanie</strong>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-patientId="@Model.PatientId" class="btn btn-sm btn-primary">Edytuj</a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="AccessLog" asp-route-patientId="@Model.PatientId" class="btn btn-sm btn-outline-secondary">
+                    Log dostepow
+                </a>
+            }
+            <a asp-action="Delete" asp-route-patientId="@Model.PatientId" class="btn btn-sm btn-outline-danger">
+                Usun kartoteke
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Grupa krwi</dt>
+            <dd class="col-sm-9">@DisplayEnum(Model.BloodType)</dd>
+
+            <dt class="col-sm-3">Alergie</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Allergies) ? "-" : Model.Allergies)</dd>
+
+            <dt class="col-sm-3">Choroby przewlekle</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.ChronicConditions) ? "-" : Model.ChronicConditions)</dd>
+
+            <dt class="col-sm-3">Stale leki</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.CurrentMedications) ? "-" : Model.CurrentMedications)</dd>
+
+            <dt class="col-sm-3">Uwagi</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Notes) ? "-" : Model.Notes)</dd>
+
+            <dt class="col-sm-3">Utworzono</dt>
+            <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+
+            @if (Model.UpdatedAt.HasValue)
+            {
+                <dt class="col-sm-3">Ostatnia aktualizacja</dt>
+                <dd class="col-sm-9">@Model.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+            }
+        </dl>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Wpisy medyczne (@Model.Entries.Count)</strong>
+        <a asp-action="CreateEntry" asp-route-patientId="@Model.PatientId" class="btn btn-sm btn-primary">
+            Dodaj wpis
+        </a>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Entries.Any())
+        {
+            <div class="p-3 text-muted">Brak wpisow w kartotece.</div>
+        }
+        else
+        {
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Typ</th>
+                        <th>Tytul</th>
+                        <th>Autor</th>
+                        <th class="text-end">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in Model.Entries)
+                    {
+                        <tr>
+                            <td>@entry.EntryDate.ToString("yyyy-MM-dd")</td>
+                            <td><span class="badge bg-secondary">@DisplayEnum(entry.Type)</span></td>
+                            <td>@entry.Title</td>
+                            <td>@entry.AuthorDisplayName</td>
+                            <td class="text-end">
+                                <a asp-action="EditEntry" asp-route-entryId="@entry.Id"
+                                   class="btn btn-sm btn-outline-primary">Edytuj</a>
+                                <a asp-action="DeleteEntry" asp-route-entryId="@entry.Id"
+                                   class="btn btn-sm btn-outline-danger">Usun</a>
+                            </td>
+                        </tr>
+                        @if (!string.IsNullOrWhiteSpace(entry.Content))
+                        {
+                            <tr>
+                                <td colspan="5" class="text-muted small ps-4">@entry.Content</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@* TODO US-05: lista wizyt pacjenta *@
+<div class="card mb-4">
+    <div class="card-header"><strong>Wizyty pacjenta</strong></div>
+    <div class="card-body">
+        <div class="alert alert-info mb-0">
+            Lista wizyt pojawi sie w kolejnym wydaniu (US-05).
+        </div>
+    </div>
+</div>
