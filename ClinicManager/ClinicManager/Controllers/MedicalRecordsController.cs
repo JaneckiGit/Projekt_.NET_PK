@@ -7,9 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManager.Controllers;
 
-[Authorize(Roles = Roles.Lekarz + "," + Roles.Admin)]
+[Authorize]
 public class MedicalRecordsController : Controller
 {
+    private const string MedicalStaffRoles = Roles.Lekarz + "," + Roles.Admin;
+    private const string ScanUploadRoles = Roles.Admin + "," + Roles.Lekarz;
+
     private readonly IMedicalRecordService _records;
 
     public MedicalRecordsController(IMedicalRecordService records)
@@ -18,6 +21,7 @@ public class MedicalRecordsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> Details(int patientId, CancellationToken ct)
     {
         var dto = await _records.GetDetailsAsync(patientId, ct);
@@ -26,6 +30,7 @@ public class MedicalRecordsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> Edit(int patientId, CancellationToken ct)
     {
         var form = await _records.GetSummaryFormAsync(patientId, ct);
@@ -35,6 +40,7 @@ public class MedicalRecordsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> Edit(int patientId, MedicalRecordFormDto dto, CancellationToken ct)
     {
         if (patientId != dto.PatientId) return BadRequest();
@@ -48,6 +54,7 @@ public class MedicalRecordsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> Delete(int patientId, CancellationToken ct)
     {
         var dto = await _records.GetDetailsAsync(patientId, ct);
@@ -57,6 +64,7 @@ public class MedicalRecordsController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> DeleteConfirmed(int patientId, CancellationToken ct)
     {
         var ok = await _records.SoftDeleteAsync(patientId, ct);
@@ -67,6 +75,7 @@ public class MedicalRecordsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = MedicalStaffRoles)]
     public IActionResult CreateEntry(int patientId)
     {
         var form = new MedicalEntryFormDto
@@ -79,6 +88,7 @@ public class MedicalRecordsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> CreateEntry(int patientId, MedicalEntryFormDto dto, CancellationToken ct)
     {
         if (patientId != dto.PatientId) return BadRequest();
@@ -95,6 +105,7 @@ public class MedicalRecordsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> EditEntry(int entryId, CancellationToken ct)
     {
         var form = await _records.GetEntryFormAsync(entryId, ct);
@@ -104,6 +115,7 @@ public class MedicalRecordsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> EditEntry(int entryId, MedicalEntryFormDto dto, CancellationToken ct)
     {
         if (entryId != dto.Id) return BadRequest();
@@ -117,6 +129,7 @@ public class MedicalRecordsController : Controller
     }
 
     [HttpGet]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> DeleteEntry(int entryId, CancellationToken ct)
     {
         var dto = await _records.GetEntryAsync(entryId, ct);
@@ -126,6 +139,7 @@ public class MedicalRecordsController : Controller
 
     [HttpPost, ActionName("DeleteEntry")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = MedicalStaffRoles)]
     public async Task<IActionResult> DeleteEntryConfirmed(int entryId, CancellationToken ct)
     {
         var patientId = await _records.DeleteEntryAsync(entryId, ct);
@@ -142,5 +156,41 @@ public class MedicalRecordsController : Controller
         var result = await _records.GetAccessLogsAsync(patientId, page, pageSize: 50, ct);
         ViewData["PatientId"] = patientId;
         return View(result);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = ScanUploadRoles)]
+
+    [RequestSizeLimit(11 * 1024 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 11 * 1024 * 1024)]
+    public async Task<IActionResult> UploadScan(int recordId, int patientId, IFormFile? scanFile, CancellationToken ct)
+    {
+        try
+        {
+            var result = await _records.UploadScanAsync(recordId, scanFile!, ct);
+            if (result is null) return NotFound();
+
+            TempData["Success"] = "Skan dokumentu zostal przeslany.";
+            return RedirectToAction(nameof(Details), new { patientId = result.PatientId });
+        }
+        catch (InvalidFileException ex)
+        {
+            TempData["UploadError"] = ex.Message;
+
+            if (patientId > 0)
+                return RedirectToAction(nameof(Details), new { patientId });
+
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetScan(int recordId, CancellationToken ct)
+    {
+        var file = await _records.GetScanAsync(recordId, ct);
+        if (file is null) return NotFound();
+
+        return PhysicalFile(file.PhysicalPath, file.ContentType, file.FileName);
     }
 }

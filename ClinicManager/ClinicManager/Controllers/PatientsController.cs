@@ -10,12 +10,15 @@ namespace ClinicManager.Controllers;
 public class PatientsController : Controller
 {
     private const string ManagePatientsRoles = Roles.Rejestratorka + "," + Roles.Admin;
+    private const string ScanUploadRoles = Roles.Admin + "," + Roles.Rejestratorka;
 
     private readonly IPatientService _patients;
+    private readonly IMedicalRecordService _records;
 
-    public PatientsController(IPatientService patients)
+    public PatientsController(IPatientService patients, IMedicalRecordService records)
     {
         _patients = patients;
+        _records = records;
     }
 
     [HttpGet]
@@ -108,5 +111,28 @@ public class PatientsController : Controller
 
         TempData["Success"] = "Pacjent został oznaczony jako usunięty (RODO: rekord zachowany w bazie).";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = ScanUploadRoles)]
+
+    [RequestSizeLimit(11 * 1024 * 1024)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 11 * 1024 * 1024)]
+    public async Task<IActionResult> UploadScan(int id, IFormFile? scanFile, CancellationToken ct)
+    {
+        try
+        {
+            var result = await _records.UploadScanForPatientAsync(id, scanFile!, ct);
+            if (result is null) return NotFound();
+
+            TempData["Success"] = "Skan dokumentu zostal przeslany.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+        catch (InvalidFileException ex)
+        {
+            TempData["UploadError"] = ex.Message;
+            return RedirectToAction(nameof(Details), new { id });
+        }
     }
 }

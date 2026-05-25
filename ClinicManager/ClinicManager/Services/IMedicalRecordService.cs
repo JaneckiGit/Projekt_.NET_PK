@@ -16,4 +16,8 @@ public interface IMedicalRecordService
     Task<int?> DeleteEntryAsync(int entryId, CancellationToken ct = default);
 
     Task<PagedResult<MedicalRecordAccessLogDto>> GetAccessLogsAsync(int patientId, int page, int pageSize, CancellationToken ct = default);
+
+    Task<ScanUploadResultDto?> UploadScanAsync(int recordId, IFormFile scanFile, CancellationToken ct = default);
+    Task<ScanUploadResultDto?> UploadScanForPatientAsync(int patientId, IFormFile scanFile, CancellationToken ct = default);
+    Task<ScanFileDto?> GetScanAsync(int recordId, CancellationToken ct = default);
 }

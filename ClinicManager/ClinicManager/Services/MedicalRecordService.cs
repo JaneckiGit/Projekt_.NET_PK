@@ -9,20 +9,33 @@ namespace ClinicManager.Services;
 
 public class MedicalRecordService : IMedicalRecordService
 {
+    private const long MaxScanFileSizeBytes = 10L * 1024L * 1024L;
+
+    private static readonly string[] AllowedScanExtensions =
+        { ".jpg", ".jpeg", ".png", ".pdf" };
+
+    // First-byte signatures for each accepted format.
+    private static readonly byte[] JpegMagic = { 0xFF, 0xD8, 0xFF };
+    private static readonly byte[] PngMagic  = { 0x89, 0x50, 0x4E, 0x47 };
+    private static readonly byte[] PdfMagic  = { 0x25, 0x50, 0x44, 0x46 };
+
     private readonly ApplicationDbContext _db;
     private readonly MedicalRecordMapper _mapper;
     private readonly IMedicalRecordAccessLogger _accessLogger;
+    private readonly IWebHostEnvironment _env;
     private readonly ILogger<MedicalRecordService> _logger;
 
     public MedicalRecordService(
         ApplicationDbContext db,
         MedicalRecordMapper mapper,
         IMedicalRecordAccessLogger accessLogger,
+        IWebHostEnvironment env,
         ILogger<MedicalRecordService> logger)
     {
         _db = db;
         _mapper = mapper;
         _accessLogger = accessLogger;
+        _env = env;
         _logger = logger;
     }
 
@@ -247,6 +260,167 @@ public class MedicalRecordService : IMedicalRecordService
             PageSize = pageSize
         };
     }
+
+    public async Task<ScanUploadResultDto?> UploadScanAsync(int recordId, IFormFile scanFile, CancellationToken ct = default)
+    {
+        var record = await _db.MedicalRecords.FirstOrDefaultAsync(r => r.Id == recordId, ct);
+        if (record is null) return null;
+
+        return await SaveScanToRecordAsync(record, scanFile, ct);
+    }
+
+    public async Task<ScanUploadResultDto?> UploadScanForPatientAsync(int patientId, IFormFile scanFile, CancellationToken ct = default)
+    {
+        var patientExists = await _db.Patients.AnyAsync(p => p.Id == patientId, ct);
+        if (!patientExists) return null;
+
+        var record = await _db.MedicalRecords.FirstOrDefaultAsync(r => r.PatientId == patientId, ct);
+        if (record is null)
+        {
+            // Auto-create MedicalRecord for this patient (same pattern as GetDetailsAsync).
+            record = new MedicalRecord
+            {
+                PatientId = patientId,
+                BloodType = BloodType.Unknown,
+                CreatedAt = DateTime.UtcNow
+            };
+            _db.MedicalRecords.Add(record);
+            await _db.SaveChangesAsync(ct);
+
+            _logger.LogInformation(
+                "MedicalRecord auto-created for PatientId={PatientId} (Id={MedicalRecordId}) during scan upload",
+                patientId, record.Id);
+
+            await _accessLogger.LogAsync(record.Id, patientId, MedicalRecordAction.Create, ct);
+        }
+
+        return await SaveScanToRecordAsync(record, scanFile, ct);
+    }
+
+    private async Task<ScanUploadResultDto> SaveScanToRecordAsync(MedicalRecord record, IFormFile scanFile, CancellationToken ct)
+    {
+        if (scanFile is null || scanFile.Length == 0)
+            throw new InvalidFileException("Plik nie zostal przeslany lub jest pusty.");
+
+        if (scanFile.Length > MaxScanFileSizeBytes)
+            throw new InvalidFileException("Plik jest zbyt duzy. Maksymalny rozmiar to 10 MB.");
+
+        var extension = Path.GetExtension(scanFile.FileName).ToLowerInvariant();
+        if (string.IsNullOrEmpty(extension) || !AllowedScanExtensions.Contains(extension))
+            throw new InvalidFileException("Niedozwolony typ pliku. Dozwolone rozszerzenia: .jpg, .jpeg, .png, .pdf.");
+
+        await using (var probeStream = scanFile.OpenReadStream())
+        {
+            if (!await MagicBytesMatchAsync(probeStream, extension, ct))
+                throw new InvalidFileException("Zawartosc pliku nie odpowiada deklarowanemu rozszerzeniu.");
+        }
+
+        var webRoot = _env.WebRootPath;
+        if (string.IsNullOrEmpty(webRoot))
+            throw new InvalidOperationException("Brak skonfigurowanego WebRootPath.");
+
+        var uploadPath = Path.GetFullPath(Path.Combine(webRoot, "uploads"));
+        Directory.CreateDirectory(uploadPath);
+
+        var safeName = Guid.NewGuid().ToString("N") + extension;
+        var filePath = Path.GetFullPath(Path.Combine(uploadPath, safeName));
+
+        // Defense in depth: even though `safeName` is generated server-side, verify
+        // that the resolved absolute path is rooted in the uploads directory.
+        var uploadPathWithSeparator = uploadPath.EndsWith(Path.DirectorySeparatorChar)
+            ? uploadPath
+            : uploadPath + Path.DirectorySeparatorChar;
+        if (!filePath.StartsWith(uploadPathWithSeparator, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidFileException("Nieprawidlowa sciezka docelowa pliku.");
+
+        await using (var output = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        {
+            await scanFile.CopyToAsync(output, ct);
+        }
+
+        var relativeUrl = "/uploads/" + safeName;
+        record.DocumentScanUrl = relativeUrl;
+        record.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+
+        _logger.LogInformation(
+            "Document scan uploaded for MedicalRecord {MedicalRecordId} (PatientId={PatientId}), stored at {Path}",
+            record.Id, record.PatientId, relativeUrl);
+
+        await _accessLogger.LogAsync(record.Id, record.PatientId, MedicalRecordAction.Edit, ct);
+
+        return new ScanUploadResultDto
+        {
+            PatientId = record.PatientId,
+            RelativeUrl = relativeUrl
+        };
+    }
+
+    public async Task<ScanFileDto?> GetScanAsync(int recordId, CancellationToken ct = default)
+    {
+        var record = await _db.MedicalRecords.AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Id == recordId, ct);
+        if (record is null || string.IsNullOrWhiteSpace(record.DocumentScanUrl))
+            return null;
+
+        var webRoot = _env.WebRootPath;
+        if (string.IsNullOrEmpty(webRoot)) return null;
+
+        var uploadPath = Path.GetFullPath(Path.Combine(webRoot, "uploads"));
+        var relative = record.DocumentScanUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+        var physicalPath = Path.GetFullPath(Path.Combine(webRoot, relative));
+
+        var uploadPathWithSeparator = uploadPath.EndsWith(Path.DirectorySeparatorChar)
+            ? uploadPath
+            : uploadPath + Path.DirectorySeparatorChar;
+        if (!physicalPath.StartsWith(uploadPathWithSeparator, StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        if (!File.Exists(physicalPath)) return null;
+
+        var fileName = Path.GetFileName(physicalPath);
+        return new ScanFileDto
+        {
+            PhysicalPath = physicalPath,
+            ContentType = GetContentType(Path.GetExtension(physicalPath).ToLowerInvariant()),
+            FileName = fileName
+        };
+    }
+
+    private static async Task<bool> MagicBytesMatchAsync(Stream stream, string extension, CancellationToken ct)
+    {
+        var expected = extension switch
+        {
+            ".jpg" or ".jpeg" => JpegMagic,
+            ".png"            => PngMagic,
+            ".pdf"            => PdfMagic,
+            _                 => null
+        };
+        if (expected is null) return false;
+
+        var buffer = new byte[expected.Length];
+        var read = 0;
+        while (read < buffer.Length)
+        {
+            var n = await stream.ReadAsync(buffer.AsMemory(read, buffer.Length - read), ct);
+            if (n == 0) return false;
+            read += n;
+        }
+
+        for (var i = 0; i < expected.Length; i++)
+        {
+            if (buffer[i] != expected[i]) return false;
+        }
+        return true;
+    }
+
+    private static string GetContentType(string extension) => extension switch
+    {
+        ".jpg" or ".jpeg" => "image/jpeg",
+        ".png"            => "image/png",
+        ".pdf"            => "application/pdf",
+        _                 => "application/octet-stream"
+    };
 
     private static string FormatAuthor(ApplicationUser? author)
     {

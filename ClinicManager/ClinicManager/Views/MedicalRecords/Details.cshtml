@@ -32,6 +32,13 @@
     <div class="alert alert-success">@success</div>
 }
 
+@if (TempData["UploadError"] is string uploadError)
+{
+    <div class="alert alert-danger">
+        <strong>Blad przesylania pliku:</strong> @uploadError
+    </div>
+}
+
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <strong>Podsumowanie</strong>
@@ -129,12 +136,109 @@
     </div>
 </div>
 
-@* TODO US-05: lista wizyt pacjenta *@
+
+@{
+    var canUploadScan = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Lekarz);
+    var hasScan = !string.IsNullOrWhiteSpace(Model.DocumentScanUrl);
+}
+
+<div class="card mb-4">
+    <div class="card-header"><strong>Skan dokumentu</strong></div>
+    <div class="card-body">
+        @if (hasScan)
+        {
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                <a asp-action="GetScan" asp-route-recordId="@Model.Id"
+                   target="_blank" rel="noopener"
+                   class="btn btn-outline-primary">
+                    Wyswietl skan
+                </a>
+                <a asp-action="GetScan" asp-route-recordId="@Model.Id"
+                   download
+                   class="btn btn-primary">
+                    Pobierz skan
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="text-muted mb-3">Brak przeslanego skanu dokumentu.</div>
+        }
+
+        @if (canUploadScan)
+        {
+            <form asp-action="UploadScan"
+                  asp-route-recordId="@Model.Id"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="row g-2 align-items-end mt-2"
+                  data-scan-upload-form>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="patientId" value="@Model.PatientId" />
+                <div class="col-sm-8">
+                    <label for="scanFile" class="form-label">
+                        Plik (.jpg, .jpeg, .png, .pdf, max 10&nbsp;MB)
+                    </label>
+                    <input type="file" id="scanFile" name="scanFile"
+                           accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                           class="form-control" required />
+                    <div class="invalid-feedback d-block d-none" data-scan-upload-error></div>
+                </div>
+                <div class="col-sm-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        @(hasScan ? "Zastap skan" : "Przeslij skan")
+                    </button>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
 <div class="card mb-4">
     <div class="card-header"><strong>Wizyty pacjenta</strong></div>
     <div class="card-body">
         <div class="alert alert-info mb-0">
-            Lista wizyt pojawi sie w kolejnym wydaniu (US-05).
+            Lista wizyt.
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const MAX_BYTES = 10 * 1024 * 1024;
+            const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.pdf'];
+            document.querySelectorAll('form[data-scan-upload-form]').forEach(function (form) {
+                const input = form.querySelector('input[type="file"][name="scanFile"]');
+                const errBox = form.querySelector('[data-scan-upload-error]');
+                form.addEventListener('submit', function (e) {
+                    if (!input || input.files.length === 0) return;
+                    const file = input.files[0];
+                    const name = (file.name || '').toLowerCase();
+                    const ext = name.substring(name.lastIndexOf('.'));
+                    let err = null;
+                    if (!ALLOWED_EXT.includes(ext)) {
+                        err = 'Niedozwolony typ pliku. Dozwolone: .jpg, .jpeg, .png, .pdf.';
+                    } else if (file.size > MAX_BYTES) {
+                        const mb = (file.size / 1024 / 1024).toFixed(2);
+                        err = 'Plik jest zbyt duzy (' + mb + ' MB). Maksymalny rozmiar to 10 MB.';
+                    }
+                    if (err) {
+                        e.preventDefault();
+                        if (errBox) {
+                            errBox.textContent = err;
+                            errBox.classList.remove('d-none');
+                        } else {
+                            alert(err);
+                        }
+                        input.classList.add('is-invalid');
+                    }
+                });
+                input?.addEventListener('change', function () {
+                    input.classList.remove('is-invalid');
+                    if (errBox) errBox.classList.add('d-none');
+                });
+            });
+        })();
+    </script>
+}

@@ -24,6 +24,9 @@ public class MedicalRecord
     [MaxLength(4000)]
     public string? Notes { get; set; }
 
+    [MaxLength(500)]
+    public string? DocumentScanUrl { get; set; }
+
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }
 

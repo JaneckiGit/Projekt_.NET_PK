@@ -16,6 +16,8 @@ public class MedicalRecordDto
     public string? CurrentMedications { get; set; }
     public string? Notes { get; set; }
 
+    public string? DocumentScanUrl { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 

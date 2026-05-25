@@ -25,6 +25,7 @@ public partial class MedicalRecordMapper
     [MapperIgnoreSource(nameof(MedicalRecord.DeletedAt))]
     [MapperIgnoreSource(nameof(MedicalRecord.CreatedAt))]
     [MapperIgnoreSource(nameof(MedicalRecord.UpdatedAt))]
+    [MapperIgnoreSource(nameof(MedicalRecord.DocumentScanUrl))]
     public partial MedicalRecordFormDto ToFormDto(MedicalRecord src);
 
     [MapperIgnoreSource(nameof(MedicalRecordFormDto.PatientId))]
@@ -37,6 +38,7 @@ public partial class MedicalRecordMapper
     [MapperIgnoreTarget(nameof(MedicalRecord.DeletedAt))]
     [MapperIgnoreTarget(nameof(MedicalRecord.CreatedAt))]
     [MapperIgnoreTarget(nameof(MedicalRecord.UpdatedAt))]
+    [MapperIgnoreTarget(nameof(MedicalRecord.DocumentScanUrl))]
     public partial void UpdateEntity(MedicalRecordFormDto src, MedicalRecord target);
 
     [MapperIgnoreSource(nameof(MedicalEntry.Author))]

@@ -1,9 +1,20 @@
 @model PatientDto
 @{
     ViewData["Title"] = $"Pacjent: {Model.FirstName} {Model.LastName}";
+    var canUploadScan = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Rejestratorka);
 }
 
 <h2>@Model.FirstName @Model.LastName</h2>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+@if (TempData["UploadError"] is string uploadError)
+{
+    <div class="alert alert-danger">@uploadError</div>
+}
 
 <dl class="row">
     <dt class="col-sm-3">PESEL</dt>
@@ -34,7 +45,7 @@
     }
 </dl>
 
-<div class="d-flex gap-2">
+<div class="d-flex gap-2 mb-4">
     @if (User.IsInRole("Lekarz") || User.IsInRole("Admin"))
     {
         <a asp-controller="MedicalRecords" asp-action="Details" asp-route-patientId="@Model.Id" class="btn btn-success">
@@ -47,3 +58,76 @@
     }
     <a asp-action="Index" class="btn btn-secondary">Powrót</a>
 </div>
+
+@if (canUploadScan)
+{
+    <div class="card mb-4">
+        <div class="card-header"><strong>Skan dokumentu pacjenta</strong></div>
+        <div class="card-body">
+            <p class="text-muted small mb-3">
+                Prześlij skan dokumentu (np. skierowanie, zaświadczenie) – plik zostanie
+                dołączony do kartoteki medycznej pacjenta.
+            </p>
+            <form asp-action="UploadScan"
+                  asp-route-id="@Model.Id"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="row g-2 align-items-end"
+                  data-scan-upload-form>
+                @Html.AntiForgeryToken()
+                <div class="col-sm-8">
+                    <label for="scanFile" class="form-label">
+                        Plik (.jpg, .jpeg, .png, .pdf, max 10&nbsp;MB)
+                    </label>
+                    <input type="file" id="scanFile" name="scanFile"
+                           accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                           class="form-control" required />
+                    <div class="invalid-feedback d-block d-none" data-scan-upload-error></div>
+                </div>
+                <div class="col-sm-4">
+                    <button type="submit" class="btn btn-primary w-100">Prześlij skan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const MAX_BYTES = 10 * 1024 * 1024;
+            const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.pdf'];
+            document.querySelectorAll('form[data-scan-upload-form]').forEach(function (form) {
+                const input = form.querySelector('input[type="file"][name="scanFile"]');
+                const errBox = form.querySelector('[data-scan-upload-error]');
+                form.addEventListener('submit', function (e) {
+                    if (!input || input.files.length === 0) return;
+                    const file = input.files[0];
+                    const name = (file.name || '').toLowerCase();
+                    const ext = name.substring(name.lastIndexOf('.'));
+                    let err = null;
+                    if (!ALLOWED_EXT.includes(ext)) {
+                        err = 'Niedozwolony typ pliku. Dozwolone: .jpg, .jpeg, .png, .pdf.';
+                    } else if (file.size > MAX_BYTES) {
+                        const mb = (file.size / 1024 / 1024).toFixed(2);
+                        err = 'Plik jest zbyt duzy (' + mb + ' MB). Maksymalny rozmiar to 10 MB.';
+                    }
+                    if (err) {
+                        e.preventDefault();
+                        if (errBox) {
+                            errBox.textContent = err;
+                            errBox.classList.remove('d-none');
+                        } else {
+                            alert(err);
+                        }
+                        input.classList.add('is-invalid');
+                    }
+                });
+                input?.addEventListener('change', function () {
+                    input.classList.remove('is-invalid');
+                    if (errBox) errBox.classList.add('d-none');
+                });
+            });
+        })();
+    </script>
+}
