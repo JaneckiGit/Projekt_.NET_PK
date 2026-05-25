@@ -2,3 +2,9 @@ bin/
 obj/
 *.user
 .vs/
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+ClinicManager/ClinicManager/wwwroot/uploads/*
+!ClinicManager/ClinicManager/wwwroot/uploads/web.config
