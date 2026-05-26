@@ -15,6 +15,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<MedicalRecord> MedicalRecords => Set<MedicalRecord>();
     public DbSet<MedicalEntry> MedicalEntries => Set<MedicalEntry>();
     public DbSet<MedicalRecordAccessLog> MedicalRecordAccessLogs => Set<MedicalRecordAccessLog>();
+    public DbSet<Visit> Visits => Set<Visit>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -72,6 +73,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .IsDescending(false, true);
 
             entity.HasIndex(l => l.PatientId);
+        });
+
+        builder.Entity<Visit>(entity =>
+        {
+            entity.HasOne(v => v.Patient)
+                .WithMany()
+                .HasForeignKey(v => v.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(v => v.Doctor)
+                .WithMany()
+                .HasForeignKey(v => v.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(v => v.ScheduledAt);
+            entity.HasIndex(v => new { v.DoctorId, v.ScheduledAt });
+            entity.HasIndex(v => v.Status);
         });
     }
 }

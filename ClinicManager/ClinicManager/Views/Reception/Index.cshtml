@@ -3,4 +3,36 @@
 }
 
 <h2>Panel Rejestratorki</h2>
-<p>Dostępne dla rejestratorki i admina.</p>
+<p class="text-muted">Dostępne dla rejestratorki i admina.</p>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Pacjenci</h5>
+                <p class="card-text text-muted">
+                    Dodawaj nowych pacjentów, edytuj dane kontaktowe i ubezpieczeniowe.
+                </p>
+                <a asp-controller="Patients" asp-action="Index" class="btn btn-primary">
+                    Lista pacjentów
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Wizyty</h5>
+                <p class="card-text text-muted">
+                    Planuj wizyty, przypisuj lekarzy, filtruj po dacie i statusie.
+                </p>
+                <a asp-controller="Visits" asp-action="Index" class="btn btn-primary">
+                    Lista wizyt
+                </a>
+                <a asp-controller="Visits" asp-action="Create" class="btn btn-outline-primary">
+                    Zaplanuj wizytę
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

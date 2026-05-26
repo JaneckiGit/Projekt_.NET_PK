@@ -3,4 +3,26 @@
 }
 
 <h2>Panel Admina</h2>
-<p>Tylko administrator ma dostęp do tej strony.</p>
+<p class="text-muted">Tylko administrator ma dostęp do tej strony.</p>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Pacjenci</h5>
+                <p class="card-text text-muted">Zarządzaj listą pacjentów i ich danymi osobowymi.</p>
+                <a asp-controller="Patients" asp-action="Index" class="btn btn-primary">Lista pacjentów</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Wizyty</h5>
+                <p class="card-text text-muted">Planuj, edytuj i anuluj wizyty wszystkich lekarzy.</p>
+                <a asp-controller="Visits" asp-action="Index" class="btn btn-primary">Lista wizyt</a>
+                <a asp-controller="Visits" asp-action="Create" class="btn btn-outline-primary">Zaplanuj</a>
+            </div>
+        </div>
+    </div>
+</div>
