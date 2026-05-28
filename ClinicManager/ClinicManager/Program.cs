@@ -7,6 +7,8 @@ using ClinicManager.Models;
 using ClinicManager.Models.Configuration;
 using ClinicManager.Services;
 
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
