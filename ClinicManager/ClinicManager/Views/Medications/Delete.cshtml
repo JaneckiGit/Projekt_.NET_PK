@@ -1,0 +1,40 @@
+@model MedicationOptionDto
+@{
+    ViewData["Title"] = "Usuń lek z katalogu";
+}
+
+<h2>Usuń lek z katalogu</h2>
+
+<div class="alert alert-danger">
+    <h5>Czy na pewno chcesz usunąć ten lek z katalogu?</h5>
+    <p class="mb-0">Ta operacja jest nieodwracalna.</p>
+</div>
+
+<div class="card border mb-3">
+    <div class="card-body">
+        <h5 class="card-title fw-bold text-primary">@Model.Name</h5>
+        @if (!string.IsNullOrWhiteSpace(Model.ActiveSubstance))
+        {
+            <h6 class="card-subtitle mb-2 text-muted">Substancja czynna: @Model.ActiveSubstance</h6>
+        }
+        <dl class="row mb-0 mt-3">
+            <dt class="col-sm-4">Postać</dt>
+            <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(Model.Form) ? "—" : Model.Form)</dd>
+
+            <dt class="col-sm-4">Domyślne dawkowanie</dt>
+            <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(Model.DefaultDosage) ? "—" : Model.DefaultDosage)</dd>
+
+            <dt class="col-sm-4">Cena jednostkowa</dt>
+            <dd class="col-sm-8 fw-semibold">@Model.UnitPrice.ToString("N2") PLN</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger">Usuń</button>
+        <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+    </div>
+</form>

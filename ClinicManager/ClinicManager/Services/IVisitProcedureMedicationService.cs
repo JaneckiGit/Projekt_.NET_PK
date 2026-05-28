@@ -8,6 +8,9 @@ public interface IVisitProcedureMedicationService
     Task<IReadOnlyList<MedicationOptionDto>> GetMedicationsAsync(CancellationToken ct = default);
     Task<MedicationOptionDto?> GetMedicationByIdAsync(int id, CancellationToken ct = default);
     Task<MedicationOptionDto> CreateMedicationAsync(MedicationOptionDto dto, CancellationToken ct = default);
+    Task<bool> MedicationNameExistsAsync(string name, int? excludeId = null, CancellationToken ct = default);
+    Task<bool> UpdateMedicationAsync(int id, MedicationOptionDto dto, CancellationToken ct = default);
+    Task<bool> DeleteMedicationAsync(int id, CancellationToken ct = default);
 
     // ──── Procedury dla wizyty ────
     Task<IReadOnlyList<ProcedurePerformedDto>> GetProceduresForVisitAsync(int visitId, CancellationToken ct = default);

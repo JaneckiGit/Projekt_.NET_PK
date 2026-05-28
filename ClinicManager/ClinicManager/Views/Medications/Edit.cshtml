@@ -1,41 +1,42 @@
 @model MedicationOptionDto
 @{
-    ViewData["Title"] = "Dodaj lek do katalogu";
+    ViewData["Title"] = "Edytuj lek w katalogu";
 }
 
-<h2>Dodaj lek do katalogu</h2>
+<h2>Edytuj lek w katalogu</h2>
 
-<form asp-action="Create" method="post" class="row g-3">
+<form asp-action="Edit" method="post" class="row g-3">
     @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
     <div class="col-md-6">
         <label asp-for="Name" class="form-label">Nazwa leku *</label>
-        <input asp-for="Name" class="form-control" placeholder='np. "Ibuprofen"' />
+        <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
     </div>
 
     <div class="col-md-6">
         <label asp-for="ActiveSubstance" class="form-label">Substancja czynna</label>
-        <input asp-for="ActiveSubstance" class="form-control" placeholder='np. "ibuprofenum"' />
+        <input asp-for="ActiveSubstance" class="form-control" />
         <span asp-validation-for="ActiveSubstance" class="text-danger"></span>
     </div>
 
     <div class="col-md-6">
         <label asp-for="Form" class="form-label">Postać</label>
-        <input asp-for="Form" class="form-control" placeholder='np. "tabletka", "syrop", "kapsułka"' />
+        <input asp-for="Form" class="form-control" />
         <span asp-validation-for="Form" class="text-danger"></span>
     </div>
 
     <div class="col-md-6">
         <label asp-for="DefaultDosage" class="form-label">Domyślne dawkowanie</label>
-        <input asp-for="DefaultDosage" class="form-control" placeholder='np. "400mg 3× dziennie"' />
+        <input asp-for="DefaultDosage" class="form-control" />
         <span asp-validation-for="DefaultDosage" class="text-danger"></span>
     </div>
 
     <div class="col-md-6">
         <label asp-for="UnitPrice" class="form-label">Cena jednostkowa (PLN) *</label>
-        <input asp-for="UnitPrice" type="number" step="0.01" class="form-control" placeholder='np. "12.50"' />
+        <input asp-for="UnitPrice" type="number" step="0.01" class="form-control" />
         <span asp-validation-for="UnitPrice" class="text-danger"></span>
     </div>
 

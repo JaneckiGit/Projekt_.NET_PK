@@ -108,7 +108,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<Medication>(entity =>
         {
-            entity.HasIndex(m => m.Name);
+            entity.HasIndex(m => m.Name)
+                .IsUnique();
         });
 
         builder.Entity<PrescribedMedication>(entity =>

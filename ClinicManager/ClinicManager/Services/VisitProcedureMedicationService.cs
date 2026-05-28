@@ -44,15 +44,54 @@ public class VisitProcedureMedicationService : IVisitProcedureMedicationService
     {
         var entity = new Medication
         {
-            Name = dto.Name,
-            ActiveSubstance = dto.ActiveSubstance,
-            Form = dto.Form,
-            DefaultDosage = dto.DefaultDosage
+            Name = dto.Name.Trim(),
+            ActiveSubstance = dto.ActiveSubstance?.Trim(),
+            Form = dto.Form?.Trim(),
+            DefaultDosage = dto.DefaultDosage?.Trim(),
+            UnitPrice = dto.UnitPrice
         };
         _db.Medications.Add(entity);
         await _db.SaveChangesAsync(ct);
         _logger.LogInformation("Medication {MedicationId} '{Name}' created", entity.Id, entity.Name);
         return _mapper.ToOptionDto(entity);
+    }
+
+    public async Task<bool> MedicationNameExistsAsync(string name, int? excludeId = null, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return false;
+        var q = _db.Medications.AsNoTracking().Where(m => m.Name.ToLower() == name.Trim().ToLower());
+        if (excludeId.HasValue)
+        {
+            q = q.Where(m => m.Id != excludeId.Value);
+        }
+        return await q.AnyAsync(ct);
+    }
+
+    public async Task<bool> UpdateMedicationAsync(int id, MedicationOptionDto dto, CancellationToken ct = default)
+    {
+        var entity = await _db.Medications.FirstOrDefaultAsync(m => m.Id == id, ct);
+        if (entity is null) return false;
+
+        entity.Name = dto.Name.Trim();
+        entity.ActiveSubstance = dto.ActiveSubstance?.Trim();
+        entity.Form = dto.Form?.Trim();
+        entity.DefaultDosage = dto.DefaultDosage?.Trim();
+        entity.UnitPrice = dto.UnitPrice;
+
+        await _db.SaveChangesAsync(ct);
+        _logger.LogInformation("Medication {MedicationId} updated", id);
+        return true;
+    }
+
+    public async Task<bool> DeleteMedicationAsync(int id, CancellationToken ct = default)
+    {
+        var entity = await _db.Medications.FirstOrDefaultAsync(m => m.Id == id, ct);
+        if (entity is null) return false;
+
+        _db.Medications.Remove(entity);
+        await _db.SaveChangesAsync(ct);
+        _logger.LogInformation("Medication {MedicationId} deleted", id);
+        return true;
     }
 
     // ──────────────────── Procedury ────────────────────

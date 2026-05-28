@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ClinicManager.Models;
 
@@ -21,6 +22,11 @@ public class Medication
 
     [MaxLength(50)]
     public string? DefaultDosage { get; set; }
+
+    [Required]
+    [Column(TypeName = "decimal(10,2)")]
+    [Range(0.00, 99999.99, ErrorMessage = "Cena jednostkowa musi być większa lub równa zero.")]
+    public decimal UnitPrice { get; set; }
 
     public ICollection<PrescribedMedication> PrescribedMedications { get; set; } = new List<PrescribedMedication>();
 }
