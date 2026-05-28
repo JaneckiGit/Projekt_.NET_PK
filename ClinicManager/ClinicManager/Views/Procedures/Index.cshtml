@@ -1,0 +1,67 @@
+@model IReadOnlyList<ProcedureOptionDto>
+@{
+    ViewData["Title"] = "Katalog procedur medycznych";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Katalog procedur medycznych</h2>
+    <a asp-action="Create" class="btn btn-primary">+ Dodaj procedurę</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @success
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @error
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-light border shadow-sm">Katalog procedur medycznych jest pusty. Dodaj pierwszą procedurę.</div>
+}
+else
+{
+    <div class="card border shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Nazwa</th>
+                        <th>Opis</th>
+                        <th class="text-end">Koszt (PLN)</th>
+                        <th class="text-end pe-3" style="width: 180px;">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td class="ps-3 fw-semibold text-dark">@p.Name</td>
+                            <td>@(string.IsNullOrWhiteSpace(p.Description) ? "—" : p.Description)</td>
+                            <td class="text-end fw-semibold">@p.Cost.ToString("N2")</td>
+                            <td class="text-end pe-3">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary">
+                                        Edytuj
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger">
+                                        Usuń
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

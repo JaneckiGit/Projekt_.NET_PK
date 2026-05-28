@@ -30,4 +30,13 @@ public interface IVisitProcedureMedicationService
 
     Task<bool> VisitExistsAsync(int visitId, CancellationToken ct = default);
     Task<bool> MedicationExistsAsync(int medicationId, CancellationToken ct = default);
+
+    // ──── Katalog procedur ────
+    Task<IReadOnlyList<ProcedureOptionDto>> GetCatalogProceduresAsync(CancellationToken ct = default);
+    Task<ProcedureOptionDto?> GetCatalogProcedureByIdAsync(int id, CancellationToken ct = default);
+    Task<ProcedureOptionDto> CreateCatalogProcedureAsync(ProcedureOptionDto dto, CancellationToken ct = default);
+    Task<bool> CatalogProcedureNameExistsAsync(string name, int? excludeId = null, CancellationToken ct = default);
+    Task<bool> UpdateCatalogProcedureAsync(int id, ProcedureOptionDto dto, CancellationToken ct = default);
+    Task<bool> DeleteCatalogProcedureAsync(int id, CancellationToken ct = default);
+    Task<bool> CatalogProcedureExistsAsync(int id, CancellationToken ct = default);
 }

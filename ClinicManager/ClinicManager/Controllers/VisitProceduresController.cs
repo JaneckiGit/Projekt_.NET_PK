@@ -38,6 +38,7 @@ public class VisitProceduresController : Controller
     {
         if (!await _service.VisitExistsAsync(visitId, ct)) return NotFound();
         ViewBag.VisitId = visitId;
+        ViewBag.CatalogProcedures = await _service.GetCatalogProceduresAsync(ct);
         return View(new ProcedurePerformedFormDto());
     }
 
@@ -51,6 +52,7 @@ public class VisitProceduresController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.VisitId = visitId;
+            ViewBag.CatalogProcedures = await _service.GetCatalogProceduresAsync(ct);
             return View(dto);
         }
 
@@ -68,6 +70,7 @@ public class VisitProceduresController : Controller
 
         var procedure = await _service.GetProcedureByIdAsync(id, ct);
         ViewBag.VisitId = procedure!.VisitId;
+        ViewBag.CatalogProcedures = await _service.GetCatalogProceduresAsync(ct);
         return View(form);
     }
 
@@ -79,6 +82,7 @@ public class VisitProceduresController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.VisitId = visitId;
+            ViewBag.CatalogProcedures = await _service.GetCatalogProceduresAsync(ct);
             return View(dto);
         }
 

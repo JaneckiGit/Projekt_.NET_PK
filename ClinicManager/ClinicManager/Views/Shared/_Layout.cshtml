@@ -56,6 +56,12 @@
                             <a class="nav-link text-dark" asp-controller="Medications" asp-action="Index">Katalog leków</a>
                         </li>
                     }
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Procedures" asp-action="Index">Katalog procedur</a>
+                        </li>
+                    }
                 </ul>
                 <ul class="navbar-nav">
                     @if (User.Identity?.IsAuthenticated == true)

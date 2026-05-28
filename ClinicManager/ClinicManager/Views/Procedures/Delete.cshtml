@@ -1,0 +1,34 @@
+@model ProcedureOptionDto
+@{
+    ViewData["Title"] = "Usuń procedurę z katalogu";
+}
+
+<h2>Usuń procedurę z katalogu</h2>
+
+<div class="alert alert-danger">
+    <h5>Czy na pewno chcesz usunąć tę procedurę z katalogu?</h5>
+    <p class="mb-0">Ta operacja jest nieodwracalna.</p>
+</div>
+
+<div class="card border mb-3">
+    <div class="card-body">
+        <h5 class="card-title fw-bold text-primary">@Model.Name</h5>
+        @if (!string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p class="card-text text-muted">@Model.Description</p>
+        }
+        <dl class="row mb-0 mt-3">
+            <dt class="col-sm-4">Koszt świadczenia</dt>
+            <dd class="col-sm-8 fw-semibold">@Model.Cost.ToString("N2") PLN</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger">Usuń</button>
+        <a asp-action="Index" class="btn btn-secondary">Anuluj</a>
+    </div>
+</form>

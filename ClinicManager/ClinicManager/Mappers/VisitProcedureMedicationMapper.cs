@@ -12,12 +12,14 @@ public partial class VisitProcedureMedicationMapper
     [MapperIgnoreTarget(nameof(ProcedurePerformedDto.VisitId))]
     [MapperIgnoreSource(nameof(ProcedurePerformed.Visit))]
     [MapperIgnoreSource(nameof(ProcedurePerformed.VisitId))]
+    [MapperIgnoreSource(nameof(ProcedurePerformed.Procedure))]
     public partial ProcedurePerformedDto ToDto(ProcedurePerformed src);
 
     [MapperIgnoreSource(nameof(ProcedurePerformedFormDto.Id))]
     [MapperIgnoreTarget(nameof(ProcedurePerformed.Id))]
     [MapperIgnoreTarget(nameof(ProcedurePerformed.VisitId))]
     [MapperIgnoreTarget(nameof(ProcedurePerformed.Visit))]
+    [MapperIgnoreTarget(nameof(ProcedurePerformed.Procedure))]
     [MapperIgnoreTarget(nameof(ProcedurePerformed.CreatedAt))]
     public partial ProcedurePerformed ToEntity(ProcedurePerformedFormDto src);
 
@@ -25,6 +27,7 @@ public partial class VisitProcedureMedicationMapper
     [MapperIgnoreTarget(nameof(ProcedurePerformed.Id))]
     [MapperIgnoreTarget(nameof(ProcedurePerformed.VisitId))]
     [MapperIgnoreTarget(nameof(ProcedurePerformed.Visit))]
+    [MapperIgnoreTarget(nameof(ProcedurePerformed.Procedure))]
     [MapperIgnoreTarget(nameof(ProcedurePerformed.CreatedAt))]
     public partial void UpdateEntity(ProcedurePerformedFormDto src, ProcedurePerformed target);
 
@@ -32,6 +35,7 @@ public partial class VisitProcedureMedicationMapper
     [MapperIgnoreSource(nameof(ProcedurePerformed.CreatedAt))]
     [MapperIgnoreSource(nameof(ProcedurePerformed.VisitId))]
     [MapperIgnoreSource(nameof(ProcedurePerformed.Id))]
+    [MapperIgnoreSource(nameof(ProcedurePerformed.Procedure))]
     [MapperIgnoreTarget(nameof(ProcedurePerformedFormDto.Id))]
     public partial ProcedurePerformedFormDto ToFormDto(ProcedurePerformed src);
 
@@ -74,4 +78,9 @@ public partial class VisitProcedureMedicationMapper
 
     [MapperIgnoreSource(nameof(Medication.PrescribedMedications))]
     public partial MedicationOptionDto ToOptionDto(Medication src);
+
+    // ──────────────────── Procedure (Catalog) ────────────────────
+
+    [MapperIgnoreSource(nameof(Procedure.ProceduresPerformed))]
+    public partial ProcedureOptionDto ToOptionDto(Procedure src);
 }

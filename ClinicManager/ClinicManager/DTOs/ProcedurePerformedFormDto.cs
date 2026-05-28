@@ -6,6 +6,9 @@ public class ProcedurePerformedFormDto
 {
     public int Id { get; set; }
 
+    [Display(Name = "Procedura z katalogu")]
+    public int? ProcedureId { get; set; }
+
     [Required(ErrorMessage = "Podaj nazwę procedury.")]
     [StringLength(200, ErrorMessage = "Nazwa procedury może mieć maksymalnie 200 znaków.")]
     [Display(Name = "Nazwa procedury")]

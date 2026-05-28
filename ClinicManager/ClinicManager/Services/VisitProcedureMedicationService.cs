@@ -250,4 +250,75 @@ public class VisitProcedureMedicationService : IVisitProcedureMedicationService
 
     public Task<bool> MedicationExistsAsync(int medicationId, CancellationToken ct = default)
         => _db.Medications.AnyAsync(m => m.Id == medicationId, ct);
+
+    // ──────────────────── Katalog procedur ────────────────────
+
+    public async Task<IReadOnlyList<ProcedureOptionDto>> GetCatalogProceduresAsync(CancellationToken ct = default)
+    {
+        var list = await _db.Procedures
+            .AsNoTracking()
+            .OrderBy(p => p.Name)
+            .ToListAsync(ct);
+
+        return list.Select(_mapper.ToOptionDto).ToList();
+    }
+
+    public async Task<ProcedureOptionDto?> GetCatalogProcedureByIdAsync(int id, CancellationToken ct = default)
+    {
+        var entity = await _db.Procedures.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, ct);
+        return entity is null ? null : _mapper.ToOptionDto(entity);
+    }
+
+    public async Task<ProcedureOptionDto> CreateCatalogProcedureAsync(ProcedureOptionDto dto, CancellationToken ct = default)
+    {
+        var entity = new Procedure
+        {
+            Name = dto.Name.Trim(),
+            Description = dto.Description?.Trim(),
+            Cost = dto.Cost
+        };
+        _db.Procedures.Add(entity);
+        await _db.SaveChangesAsync(ct);
+        _logger.LogInformation("Procedure {ProcedureId} '{Name}' created in catalog", entity.Id, entity.Name);
+        return _mapper.ToOptionDto(entity);
+    }
+
+    public async Task<bool> CatalogProcedureNameExistsAsync(string name, int? excludeId = null, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return false;
+        var q = _db.Procedures.AsNoTracking().Where(p => p.Name.ToLower() == name.Trim().ToLower());
+        if (excludeId.HasValue)
+        {
+            q = q.Where(p => p.Id != excludeId.Value);
+        }
+        return await q.AnyAsync(ct);
+    }
+
+    public async Task<bool> UpdateCatalogProcedureAsync(int id, ProcedureOptionDto dto, CancellationToken ct = default)
+    {
+        var entity = await _db.Procedures.FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (entity is null) return false;
+
+        entity.Name = dto.Name.Trim();
+        entity.Description = dto.Description?.Trim();
+        entity.Cost = dto.Cost;
+
+        await _db.SaveChangesAsync(ct);
+        _logger.LogInformation("Procedure {ProcedureId} updated in catalog", id);
+        return true;
+    }
+
+    public async Task<bool> DeleteCatalogProcedureAsync(int id, CancellationToken ct = default)
+    {
+        var entity = await _db.Procedures.FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (entity is null) return false;
+
+        _db.Procedures.Remove(entity);
+        await _db.SaveChangesAsync(ct);
+        _logger.LogInformation("Procedure {ProcedureId} deleted from catalog", id);
+        return true;
+    }
+
+    public Task<bool> CatalogProcedureExistsAsync(int id, CancellationToken ct = default)
+        => _db.Procedures.AnyAsync(p => p.Id == id, ct);
 }

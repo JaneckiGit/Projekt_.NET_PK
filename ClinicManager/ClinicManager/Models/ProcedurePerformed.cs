@@ -5,7 +5,7 @@ namespace ClinicManager.Models;
 
 /// <summary>
 /// Procedura medyczna wykonana podczas wizyty.
-/// Wybierana z katalogu (pole Name) – uproszczona wersja bez osobnej tabeli katalogu.
+/// Wybierana z katalogu (Procedura).
 /// </summary>
 public class ProcedurePerformed
 {
@@ -13,6 +13,9 @@ public class ProcedurePerformed
 
     public int VisitId { get; set; }
     public Visit Visit { get; set; } = null!;
+
+    public int? ProcedureId { get; set; }
+    public Procedure? Procedure { get; set; }
 
     /// <summary>Nazwa procedury – lekarz wpisuje lub wybiera z podpowiedzi.</summary>
     [Required]

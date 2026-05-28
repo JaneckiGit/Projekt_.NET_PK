@@ -19,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Medication> Medications => Set<Medication>();
     public DbSet<PrescribedMedication> PrescribedMedications => Set<PrescribedMedication>();
     public DbSet<ProcedurePerformed> ProceduresPerformed => Set<ProcedurePerformed>();
+    public DbSet<Procedure> Procedures => Set<Procedure>();
     public DbSet<ClinicalNote> ClinicalNotes => Set<ClinicalNote>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -112,6 +113,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .IsUnique();
         });
 
+        builder.Entity<Procedure>(entity =>
+        {
+            entity.HasIndex(p => p.Name)
+                .IsUnique();
+        });
+
         builder.Entity<PrescribedMedication>(entity =>
         {
             entity.HasOne(pm => pm.Medication)
@@ -124,6 +131,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         builder.Entity<ProcedurePerformed>(entity =>
         {
+            entity.HasOne(p => p.Procedure)
+                .WithMany(pr => pr.ProceduresPerformed)
+                .HasForeignKey(p => p.ProcedureId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasIndex(p => p.VisitId);
         });
 
