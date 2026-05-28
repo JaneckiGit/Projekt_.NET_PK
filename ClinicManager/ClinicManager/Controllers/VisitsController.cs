@@ -16,15 +16,18 @@ public class VisitsController : Controller
     private readonly IVisitService _visits;
     private readonly IPatientService _patients;
     private readonly IVisitProcedureMedicationService _procedureMedService;
+    private readonly IClinicalNoteService _notesService;
 
     public VisitsController(
         IVisitService visits,
         IPatientService patients,
-        IVisitProcedureMedicationService procedureMedService)
+        IVisitProcedureMedicationService procedureMedService,
+        IClinicalNoteService notesService)
     {
         _visits = visits;
         _patients = patients;
         _procedureMedService = procedureMedService;
+        _notesService = notesService;
     }
 
     [HttpGet]
@@ -47,6 +50,11 @@ public class VisitsController : Controller
 
         ViewBag.Procedures = await _procedureMedService.GetProceduresForVisitAsync(id, ct);
         ViewBag.Medications = await _procedureMedService.GetMedicationsForVisitAsync(id, ct);
+
+        if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Lekarz))
+        {
+            ViewBag.ClinicalNotes = await _notesService.GetNotesForVisitAsync(id, ct);
+        }
 
         return View(dto);
     }

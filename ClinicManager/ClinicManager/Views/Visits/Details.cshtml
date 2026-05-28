@@ -204,3 +204,55 @@
         </table>
     }
 </div>
+
+@* ──────────────────── Notatki kliniczne ──────────────────── *@
+@if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Lekarz))
+{
+    var clinicalNotes = ViewBag.ClinicalNotes as IReadOnlyList<ClinicalNoteDto> ?? new List<ClinicalNoteDto>();
+
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4>Notatki kliniczne</h4>
+            <a asp-controller="ClinicalNotes" asp-action="Add"
+               asp-route-visitId="@Model.Id" class="btn btn-sm btn-outline-primary">
+                + Dodaj notatkę kliniczną
+            </a>
+        </div>
+
+        @if (!clinicalNotes.Any())
+        {
+            <div class="alert alert-light border">Brak notatek klinicznych dla tej wizyty.</div>
+        }
+        else
+        {
+            <div class="list-group">
+                @foreach (var note in clinicalNotes)
+                {
+                    <div class="list-group-item list-group-item-action flex-column align-items-start border mb-2 rounded p-3">
+                        <div class="d-flex w-100 justify-content-between mb-2">
+                            <h6 class="mb-1 fw-bold text-primary">
+                                <i class="bi bi-person-fill me-1"></i> Autor: @note.AuthorDisplayName
+                            </h6>
+                            <small class="text-muted">
+                                @note.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                @if (note.UpdatedAt.HasValue)
+                                {
+                                    <span class="ms-1 text-warning" title="Edytowano: @note.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")">(edytowana)</span>
+                                }
+                            </small>
+                        </div>
+                        <p class="mb-2 text-dark" style="white-space: pre-wrap;">@note.Content</p>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-controller="ClinicalNotes" asp-action="Edit" asp-route-id="@note.Id" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                                Edytuj
+                            </a>
+                            <a asp-controller="ClinicalNotes" asp-action="Delete" asp-route-id="@note.Id" class="btn btn-sm btn-outline-danger py-0 px-2">
+                                Usuń
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
