@@ -19,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Medication> Medications => Set<Medication>();
     public DbSet<PrescribedMedication> PrescribedMedications => Set<PrescribedMedication>();
     public DbSet<ProcedurePerformed> ProceduresPerformed => Set<ProcedurePerformed>();
+    public DbSet<ClinicalNote> ClinicalNotes => Set<ClinicalNote>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -123,6 +124,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<ProcedurePerformed>(entity =>
         {
             entity.HasIndex(p => p.VisitId);
+        });
+
+        builder.Entity<ClinicalNote>(entity =>
+        {
+            entity.HasOne(n => n.Visit)
+                .WithMany(v => v.ClinicalNotes)
+                .HasForeignKey(n => n.VisitId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(n => n.Author)
+                .WithMany()
+                .HasForeignKey(n => n.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(n => n.VisitId);
+            entity.HasIndex(n => new { n.VisitId, n.CreatedAt });
         });
     }
 }

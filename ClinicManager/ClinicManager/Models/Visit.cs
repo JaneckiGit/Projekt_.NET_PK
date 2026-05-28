@@ -25,4 +25,5 @@ public class Visit
 
     public ICollection<ProcedurePerformed> ProceduresPerformed { get; set; } = new List<ProcedurePerformed>();
     public ICollection<PrescribedMedication> PrescribedMedications { get; set; } = new List<PrescribedMedication>();
+    public ICollection<ClinicalNote> ClinicalNotes { get; set; } = new List<ClinicalNote>();
 }
