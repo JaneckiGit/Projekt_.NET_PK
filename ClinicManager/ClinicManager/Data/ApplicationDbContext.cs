@@ -16,6 +16,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<MedicalEntry> MedicalEntries => Set<MedicalEntry>();
     public DbSet<MedicalRecordAccessLog> MedicalRecordAccessLogs => Set<MedicalRecordAccessLog>();
     public DbSet<Visit> Visits => Set<Visit>();
+    public DbSet<Medication> Medications => Set<Medication>();
+    public DbSet<PrescribedMedication> PrescribedMedications => Set<PrescribedMedication>();
+    public DbSet<ProcedurePerformed> ProceduresPerformed => Set<ProcedurePerformed>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -87,9 +90,39 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasForeignKey(v => v.DoctorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            entity.HasMany(v => v.ProceduresPerformed)
+                .WithOne(p => p.Visit)
+                .HasForeignKey(p => p.VisitId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(v => v.PrescribedMedications)
+                .WithOne(pm => pm.Visit)
+                .HasForeignKey(pm => pm.VisitId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasIndex(v => v.ScheduledAt);
             entity.HasIndex(v => new { v.DoctorId, v.ScheduledAt });
             entity.HasIndex(v => v.Status);
+        });
+
+        builder.Entity<Medication>(entity =>
+        {
+            entity.HasIndex(m => m.Name);
+        });
+
+        builder.Entity<PrescribedMedication>(entity =>
+        {
+            entity.HasOne(pm => pm.Medication)
+                .WithMany(m => m.PrescribedMedications)
+                .HasForeignKey(pm => pm.MedicationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(pm => pm.VisitId);
+        });
+
+        builder.Entity<ProcedurePerformed>(entity =>
+        {
+            entity.HasIndex(p => p.VisitId);
         });
     }
 }

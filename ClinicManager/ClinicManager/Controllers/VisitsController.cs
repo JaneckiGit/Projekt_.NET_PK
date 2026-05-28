@@ -15,11 +15,16 @@ public class VisitsController : Controller
 
     private readonly IVisitService _visits;
     private readonly IPatientService _patients;
+    private readonly IVisitProcedureMedicationService _procedureMedService;
 
-    public VisitsController(IVisitService visits, IPatientService patients)
+    public VisitsController(
+        IVisitService visits,
+        IPatientService patients,
+        IVisitProcedureMedicationService procedureMedService)
     {
         _visits = visits;
         _patients = patients;
+        _procedureMedService = procedureMedService;
     }
 
     [HttpGet]
@@ -39,6 +44,10 @@ public class VisitsController : Controller
     {
         var dto = await _visits.GetByIdAsync(id, ct);
         if (dto is null) return NotFound();
+
+        ViewBag.Procedures = await _procedureMedService.GetProceduresForVisitAsync(id, ct);
+        ViewBag.Medications = await _procedureMedService.GetMedicationsForVisitAsync(id, ct);
+
         return View(dto);
     }
 

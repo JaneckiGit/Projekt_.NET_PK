@@ -1,0 +1,28 @@
+@model ProcedurePerformedDto
+@{
+    ViewData["Title"] = "Usuń procedurę";
+}
+
+<h2>Usuń procedurę medyczną</h2>
+
+<div class="alert alert-warning">
+    Czy na pewno chcesz usunąć tę procedurę? Operacja jest nieodwracalna.
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Nazwa procedury</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+
+    <dt class="col-sm-3">Opis</dt>
+    <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Description) ? "—" : Model.Description)</dd>
+
+    <dt class="col-sm-3">Koszt</dt>
+    <dd class="col-sm-9">@Model.Cost.ToString("N2") PLN</dd>
+</dl>
+
+<form asp-action="DeleteProcedure" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="visitId" value="@Model.VisitId" />
+    <button type="submit" class="btn btn-danger">Usuń</button>
+    <a asp-controller="Visits" asp-action="Details" asp-route-id="@Model.VisitId" class="btn btn-secondary">Anuluj</a>
+</form>

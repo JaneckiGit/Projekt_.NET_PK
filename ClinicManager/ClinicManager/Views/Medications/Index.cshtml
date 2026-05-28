@@ -1,0 +1,43 @@
+@model IReadOnlyList<MedicationOptionDto>
+@{
+    ViewData["Title"] = "Katalog leków";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Katalog leków</h2>
+    <a asp-action="Create" class="btn btn-primary">+ Dodaj lek</a>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Katalog leków jest pusty. Dodaj pierwszy lek.</div>
+}
+else
+{
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Nazwa</th>
+                <th>Substancja czynna</th>
+                <th>Postać</th>
+                <th>Domyślne dawkowanie</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model)
+            {
+                <tr>
+                    <td>@m.Name</td>
+                    <td>@(string.IsNullOrWhiteSpace(m.ActiveSubstance) ? "—" : m.ActiveSubstance)</td>
+                    <td>@(string.IsNullOrWhiteSpace(m.Form) ? "—" : m.Form)</td>
+                    <td>@(string.IsNullOrWhiteSpace(m.DefaultDosage) ? "—" : m.DefaultDosage)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
