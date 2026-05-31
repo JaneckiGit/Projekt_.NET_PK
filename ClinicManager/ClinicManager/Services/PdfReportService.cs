@@ -48,6 +48,18 @@ public class PdfReportService : IPdfReportService
 
         return pdfBytes;
     }
+
+    public byte[] GenerateUpcomingVisitsReportPdf(IReadOnlyList<VisitDto> visits, DateOnly reportDate)
+    {
+        var document = new UpcomingVisitsReportDocument(visits, reportDate);
+        var pdfBytes = document.GeneratePdf();
+
+        _logger.LogInformation(
+            "Upcoming visits report PDF generated for {Date} ({Count} visits, {Bytes} bytes).",
+            reportDate, visits.Count, pdfBytes.Length);
+
+        return pdfBytes;
+    }
     
 
     private sealed class VisitPdfDocument : IDocument
@@ -318,6 +330,103 @@ public class PdfReportService : IPdfReportService
                 x.CurrentPageNumber();
                 x.Span(" z ");
                 x.TotalPages();
+            });
+        }
+    }
+
+    private sealed class UpcomingVisitsReportDocument : IDocument
+    {
+        private readonly IReadOnlyList<VisitDto> _visits;
+        private readonly DateOnly _reportDate;
+
+        public UpcomingVisitsReportDocument(IReadOnlyList<VisitDto> visits, DateOnly reportDate)
+        {
+            _visits = visits;
+            _reportDate = reportDate;
+        }
+
+        public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
+
+        public void Compose(IDocumentContainer container)
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(1.5f, Unit.Centimetre);
+                page.PageColor(Colors.White);
+                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+
+                page.Header().Column(col =>
+                {
+                    col.Item().Text($"RAPORT WIZYT NA {_reportDate:yyyy-MM-dd}")
+                        .Bold().FontSize(20).FontColor(Colors.Indigo.Darken3);
+                    col.Item().Text($"Wygenerowano: {DateTime.Now:yyyy-MM-dd HH:mm}")
+                        .FontSize(9).Italic();
+                    col.Item().PaddingTop(5)
+                        .Text($"Liczba zaplanowanych wizyt: {_visits.Count}")
+                        .FontSize(11);
+                });
+
+                page.Content().PaddingVertical(0.8f, Unit.Centimetre).Column(col =>
+                {
+                    if (_visits.Count == 0)
+                    {
+                        col.Item().PaddingTop(20).Text("Brak zaplanowanych wizyt.")
+                            .Italic().FontSize(12);
+                    }
+                    else
+                    {
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.ConstantColumn(35);   // Lp.
+                                columns.RelativeColumn(2);    // Godzina
+                                columns.RelativeColumn(3);    // Pacjent
+                                columns.RelativeColumn(3);    // Lekarz
+                                columns.RelativeColumn(2);    // Status
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().Background(Colors.Indigo.Darken2).Padding(5)
+                                    .Text("Lp.").Bold().FontColor(Colors.White);
+                                header.Cell().Background(Colors.Indigo.Darken2).Padding(5)
+                                    .Text("Godzina").Bold().FontColor(Colors.White);
+                                header.Cell().Background(Colors.Indigo.Darken2).Padding(5)
+                                    .Text("Pacjent").Bold().FontColor(Colors.White);
+                                header.Cell().Background(Colors.Indigo.Darken2).Padding(5)
+                                    .Text("Lekarz").Bold().FontColor(Colors.White);
+                                header.Cell().Background(Colors.Indigo.Darken2).Padding(5)
+                                    .Text("Status").Bold().FontColor(Colors.White);
+                            });
+
+                            var index = 1;
+                            foreach (var v in _visits.OrderBy(v => v.ScheduledAt))
+                            {
+                                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3)
+                                    .Padding(5).Text(index.ToString());
+                                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3)
+                                    .Padding(5).Text(v.ScheduledAt.ToString("HH:mm"));
+                                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3)
+                                    .Padding(5).Text(v.PatientDisplayName);
+                                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3)
+                                    .Padding(5).Text(v.DoctorDisplayName);
+                                table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3)
+                                    .Padding(5).Text(v.Status.ToString());
+                                index++;
+                            }
+                        });
+                    }
+                });
+
+                page.Footer().AlignCenter().Text(x =>
+                {
+                    x.Span("Strona ");
+                    x.CurrentPageNumber();
+                    x.Span(" z ");
+                    x.TotalPages();
+                });
             });
         }
     }
