@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClinicManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260526081634_AddVisit")]
-    partial class AddVisit
+    [Migration("20260531144330_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -96,6 +96,43 @@ namespace ClinicManager.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("ClinicManager.Models.ClinicalNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("VisitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("VisitId");
+
+                    b.HasIndex("VisitId", "CreatedAt");
+
+                    b.ToTable("ClinicalNotes");
                 });
 
             modelBuilder.Entity("ClinicManager.Models.MedicalEntry", b =>
@@ -243,6 +280,42 @@ namespace ClinicManager.Migrations
                     b.ToTable("MedicalRecordAccessLogs");
                 });
 
+            modelBuilder.Entity("ClinicManager.Models.Medication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActiveSubstance")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("DefaultDosage")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Form")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Medications");
+                });
+
             modelBuilder.Entity("ClinicManager.Models.Patient", b =>
                 {
                     b.Property<int>("Id")
@@ -307,6 +380,113 @@ namespace ClinicManager.Migrations
                         .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("ClinicManager.Models.PrescribedMedication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Dosage")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("MedicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VisitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicationId");
+
+                    b.HasIndex("VisitId");
+
+                    b.ToTable("PrescribedMedications");
+                });
+
+            modelBuilder.Entity("ClinicManager.Models.Procedure", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Procedures");
+                });
+
+            modelBuilder.Entity("ClinicManager.Models.ProcedurePerformed", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("ProcedureId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VisitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProcedureId");
+
+                    b.HasIndex("VisitId");
+
+                    b.ToTable("ProceduresPerformed");
                 });
 
             modelBuilder.Entity("ClinicManager.Models.Visit", b =>
@@ -486,6 +666,25 @@ namespace ClinicManager.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ClinicManager.Models.ClinicalNote", b =>
+                {
+                    b.HasOne("ClinicManager.Models.ApplicationUser", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ClinicManager.Models.Visit", "Visit")
+                        .WithMany("ClinicalNotes")
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Visit");
+                });
+
             modelBuilder.Entity("ClinicManager.Models.MedicalEntry", b =>
                 {
                     b.HasOne("ClinicManager.Models.ApplicationUser", "Author")
@@ -525,6 +724,43 @@ namespace ClinicManager.Migrations
                         .IsRequired();
 
                     b.Navigation("MedicalRecord");
+                });
+
+            modelBuilder.Entity("ClinicManager.Models.PrescribedMedication", b =>
+                {
+                    b.HasOne("ClinicManager.Models.Medication", "Medication")
+                        .WithMany("PrescribedMedications")
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ClinicManager.Models.Visit", "Visit")
+                        .WithMany("PrescribedMedications")
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Medication");
+
+                    b.Navigation("Visit");
+                });
+
+            modelBuilder.Entity("ClinicManager.Models.ProcedurePerformed", b =>
+                {
+                    b.HasOne("ClinicManager.Models.Procedure", "Procedure")
+                        .WithMany("ProceduresPerformed")
+                        .HasForeignKey("ProcedureId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ClinicManager.Models.Visit", "Visit")
+                        .WithMany("ProceduresPerformed")
+                        .HasForeignKey("VisitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Procedure");
+
+                    b.Navigation("Visit");
                 });
 
             modelBuilder.Entity("ClinicManager.Models.Visit", b =>
@@ -602,6 +838,25 @@ namespace ClinicManager.Migrations
                     b.Navigation("AccessLogs");
 
                     b.Navigation("Entries");
+                });
+
+            modelBuilder.Entity("ClinicManager.Models.Medication", b =>
+                {
+                    b.Navigation("PrescribedMedications");
+                });
+
+            modelBuilder.Entity("ClinicManager.Models.Procedure", b =>
+                {
+                    b.Navigation("ProceduresPerformed");
+                });
+
+            modelBuilder.Entity("ClinicManager.Models.Visit", b =>
+                {
+                    b.Navigation("ClinicalNotes");
+
+                    b.Navigation("PrescribedMedications");
+
+                    b.Navigation("ProceduresPerformed");
                 });
 #pragma warning restore 612, 618
         }
