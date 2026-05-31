@@ -12,22 +12,26 @@ public class VisitsController : Controller
 {
     private const string ManageVisitsRoles = Roles.Admin + "," + Roles.Rejestratorka;
     private const string ViewVisitsRoles = Roles.Admin + "," + Roles.Rejestratorka + "," + Roles.Lekarz;
+    private const string PdfAccessRoles = Roles.Admin + "," + Roles.Lekarz;
 
     private readonly IVisitService _visits;
     private readonly IPatientService _patients;
     private readonly IVisitProcedureMedicationService _procedureMedService;
     private readonly IClinicalNoteService _notesService;
+    private readonly IPdfReportService _pdfReportService;
 
     public VisitsController(
         IVisitService visits,
         IPatientService patients,
         IVisitProcedureMedicationService procedureMedService,
-        IClinicalNoteService notesService)
+        IClinicalNoteService notesService,
+        IPdfReportService pdfReportService)
     {
         _visits = visits;
         _patients = patients;
         _procedureMedService = procedureMedService;
         _notesService = notesService;
+        _pdfReportService = pdfReportService;
     }
 
     [HttpGet]
@@ -143,6 +147,26 @@ public class VisitsController : Controller
 
         TempData["Success"] = "Wizyta została anulowana (soft delete: rekord zachowany w bazie).";
         return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>
+    /// Generates and downloads a PDF visit card with prescription for the given visit.
+    /// </summary>
+    /// <param name="id">Visit ID.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>PDF file binary.</returns>
+    [HttpGet]
+    [Authorize(Roles = PdfAccessRoles)]
+    [ProducesResponseType(typeof(FileResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DownloadPdf(int id, CancellationToken ct)
+    {
+        var pdfBytes = await _pdfReportService.GenerateVisitPdfAsync(id, ct);
+        if (pdfBytes is null) return NotFound();
+
+        return File(pdfBytes, "application/pdf", $"visit-{id}.pdf");
     }
 
     private async Task PopulateDoctorsAsync(CancellationToken ct, string? selectedDoctorId = null)

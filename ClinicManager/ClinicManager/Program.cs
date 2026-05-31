@@ -49,6 +49,7 @@ builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 builder.Services.AddScoped<IVisitService, VisitService>();
 builder.Services.AddScoped<IVisitProcedureMedicationService, VisitProcedureMedicationService>();
 builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
+builder.Services.AddScoped<IPdfReportService, PdfReportService>();
 
 builder.Services.AddControllersWithViews();
 
