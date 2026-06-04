@@ -35,6 +35,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasFilter("[IsDeleted] = 0");
 
             entity.HasIndex(p => p.LastName);
+
+            // US-15: indeks non-clustered na InsuranceNumber – wyszukiwanie pacjentów po numerze ubezpieczenia
+            entity.HasIndex(p => p.InsuranceNumber)
+                .HasDatabaseName("IX_Patients_InsuranceNumber");
         });
 
         builder.Entity<MedicalRecord>(entity =>
@@ -78,6 +82,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .IsDescending(false, true);
 
             entity.HasIndex(l => l.PatientId);
+
+            // US-15: indeks non-clustered na UserId – filtrowanie logów dostępu po użytkowniku
+            entity.HasIndex(l => l.UserId)
+                .HasDatabaseName("IX_MedicalRecordAccessLogs_UserId");
         });
 
         builder.Entity<Visit>(entity =>
@@ -105,6 +113,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(v => v.ScheduledAt);
             entity.HasIndex(v => new { v.DoctorId, v.ScheduledAt });
             entity.HasIndex(v => v.Status);
+
+            // US-15: indeks kompozytowy non-clustered na PatientId + ScheduledAt
+            // – szybkie wyszukiwanie historii wizyt konkretnego pacjenta z sortowaniem po dacie
+            entity.HasIndex(v => new { v.PatientId, v.ScheduledAt })
+                .HasDatabaseName("IX_Visits_PatientId_ScheduledAt");
         });
 
         builder.Entity<Medication>(entity =>
