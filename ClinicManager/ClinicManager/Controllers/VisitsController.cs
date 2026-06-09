@@ -1,4 +1,5 @@
 using ClinicManager.DTOs;
+using ClinicManager.Mappers;
 using ClinicManager.Models;
 using ClinicManager.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -19,19 +20,32 @@ public class VisitsController : Controller
     private readonly IVisitProcedureMedicationService _procedureMedService;
     private readonly IClinicalNoteService _notesService;
     private readonly IPdfReportService _pdfReportService;
+    private readonly VisitMapper _mapper;
 
     public VisitsController(
         IVisitService visits,
         IPatientService patients,
         IVisitProcedureMedicationService procedureMedService,
         IClinicalNoteService notesService,
-        IPdfReportService pdfReportService)
+        IPdfReportService pdfReportService,
+        VisitMapper mapper)
     {
         _visits = visits;
         _patients = patients;
         _procedureMedService = procedureMedService;
         _notesService = notesService;
         _pdfReportService = pdfReportService;
+        _mapper = mapper;
+    }
+    
+    [HttpGet("api/visits/active")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IEnumerable<ActiveVisitDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ActiveVisitDto>>> GetActiveVisits()
+    {
+        var visits = await _visits.GetActiveVisitsAsync();
+        var result = visits.Select(_mapper.ToActiveVisitDto).ToList();
+        return Ok(result);
     }
 
     [HttpGet]

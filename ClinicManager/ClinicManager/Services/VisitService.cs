@@ -65,6 +65,17 @@ public class VisitService : IVisitService
         return entities.Select(_mapper.ToDto).ToList();
     }
 
+    public async Task<IEnumerable<Visit>> GetActiveVisitsAsync()
+    {
+        return await _db.Visits
+            .AsNoTracking()
+            .Include(v => v.Patient)
+            .Include(v => v.Doctor)
+            .Where(v => v.Status == VisitStatus.Planned || v.Status == VisitStatus.InProgress)
+            .OrderBy(v => v.ScheduledAt)
+            .ToListAsync();
+    }
+
     public async Task<VisitDto?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         var entity = await _db.Visits
