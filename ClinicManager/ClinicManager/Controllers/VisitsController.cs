@@ -21,6 +21,7 @@ public class VisitsController : Controller
     private readonly IClinicalNoteService _notesService;
     private readonly IPdfReportService _pdfReportService;
     private readonly VisitMapper _mapper;
+    private readonly ILogger<VisitsController> _logger;
 
     public VisitsController(
         IVisitService visits,
@@ -28,7 +29,8 @@ public class VisitsController : Controller
         IVisitProcedureMedicationService procedureMedService,
         IClinicalNoteService notesService,
         IPdfReportService pdfReportService,
-        VisitMapper mapper)
+        VisitMapper mapper,
+        ILogger<VisitsController> logger)
     {
         _visits = visits;
         _patients = patients;
@@ -36,6 +38,7 @@ public class VisitsController : Controller
         _notesService = notesService;
         _pdfReportService = pdfReportService;
         _mapper = mapper;
+        _logger = logger;
     }
     
     [HttpGet("api/visits/active")]

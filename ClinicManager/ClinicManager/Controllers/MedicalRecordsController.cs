@@ -14,10 +14,12 @@ public class MedicalRecordsController : Controller
     private const string ScanUploadRoles = Roles.Admin + "," + Roles.Lekarz;
 
     private readonly IMedicalRecordService _records;
+    private readonly ILogger<MedicalRecordsController> _logger;
 
-    public MedicalRecordsController(IMedicalRecordService records)
+    public MedicalRecordsController(IMedicalRecordService records, ILogger<MedicalRecordsController> logger)
     {
         _records = records;
+        _logger = logger;
     }
 
     [HttpGet]

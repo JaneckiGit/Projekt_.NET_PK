@@ -14,11 +14,13 @@ public class PatientsController : Controller
 
     private readonly IPatientService _patients;
     private readonly IMedicalRecordService _records;
+    private readonly ILogger<PatientsController> _logger;
 
-    public PatientsController(IPatientService patients, IMedicalRecordService records)
+    public PatientsController(IPatientService patients, IMedicalRecordService records, ILogger<PatientsController> logger)
     {
         _patients = patients;
         _records = records;
+        _logger = logger;
     }
 
     [HttpGet]

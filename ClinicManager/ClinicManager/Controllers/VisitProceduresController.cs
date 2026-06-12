@@ -21,13 +21,16 @@ public class VisitProceduresController : Controller
 
     private readonly IVisitProcedureMedicationService _service;
     private readonly IVisitService _visits;
+    private readonly ILogger<VisitProceduresController> _logger;
 
     public VisitProceduresController(
         IVisitProcedureMedicationService service,
-        IVisitService visits)
+        IVisitService visits,
+        ILogger<VisitProceduresController> logger)
     {
         _service = service;
         _visits = visits;
+        _logger = logger;
     }
 
     // ─────────────────── Procedury ───────────────────

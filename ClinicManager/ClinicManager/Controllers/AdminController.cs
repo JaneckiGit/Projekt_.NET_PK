@@ -22,11 +22,16 @@ public class AdminController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<AdminController> _logger;
 
-    public AdminController(ApplicationDbContext db, UserManager<ApplicationUser> userManager)
+    public AdminController(
+        ApplicationDbContext db, 
+        UserManager<ApplicationUser> userManager,
+        ILogger<AdminController> logger)
     {
         _db = db;
         _userManager = userManager;
+        _logger = logger;
     }
 
     [HttpGet]

@@ -6,12 +6,37 @@ using ClinicManager.Mappers;
 using ClinicManager.Models;
 using ClinicManager.Models.Configuration;
 using ClinicManager.Services;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
+using NLog.Web;
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 DockerDbManager.EnsureSqlServerContainerRunning();
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure NLog programmatically
+var nlogConfig = new LoggingConfiguration();
+var logfile = new FileTarget("errorsLog")
+{
+    FileName = "/logs/errors.log",
+    Layout = "${longdate}|${level:uppercase=true}|${logger}|${message}${onexception:inner=${newline}${exception:format=tostring}}",
+    CreateDirs = true
+};
+nlogConfig.AddRule(NLog.LogLevel.Error, NLog.LogLevel.Fatal, logfile);
+
+var logconsole = new ConsoleTarget("logconsole")
+{
+    Layout = "${longdate}|${level:uppercase=true}|${logger}|${message}${onexception:inner=${newline}${exception:format=tostring}}"
+};
+nlogConfig.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, logconsole);
+
+LogManager.Configuration = nlogConfig;
+
+builder.Logging.ClearProviders();
+builder.Host.UseNLog();
 
 builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
 {
@@ -23,7 +48,7 @@ builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =
     {
         options.EnableSensitiveDataLogging();
         options.EnableDetailedErrors();
-        options.LogTo(Console.WriteLine, LogLevel.Information);
+        options.LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
     }
 });
 
@@ -79,6 +104,20 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Unhandled exception (HTTP 500) occurred during request processing for path: {Path}", context.Request.Path);
+        throw;
+    }
+});
 
 using (var scope = app.Services.CreateScope())
 {

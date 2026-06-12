@@ -14,10 +14,12 @@ namespace ClinicManager.Controllers;
 public class ProceduresController : Controller
 {
     private readonly IVisitProcedureMedicationService _service;
+    private readonly ILogger<ProceduresController> _logger;
 
-    public ProceduresController(IVisitProcedureMedicationService service)
+    public ProceduresController(IVisitProcedureMedicationService service, ILogger<ProceduresController> logger)
     {
         _service = service;
+        _logger = logger;
     }
 
     [HttpGet]

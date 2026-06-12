@@ -13,11 +13,16 @@ public class ClinicalNotesController : Controller
 {
     private readonly IClinicalNoteService _notesService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<ClinicalNotesController> _logger;
 
-    public ClinicalNotesController(IClinicalNoteService notesService, UserManager<ApplicationUser> userManager)
+    public ClinicalNotesController(
+        IClinicalNoteService notesService, 
+        UserManager<ApplicationUser> userManager,
+        ILogger<ClinicalNotesController> logger)
     {
         _notesService = notesService;
         _userManager = userManager;
+        _logger = logger;
     }
 
     [HttpGet]
