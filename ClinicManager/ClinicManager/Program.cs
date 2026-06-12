@@ -13,10 +13,19 @@ DockerDbManager.EnsureSqlServerContainerRunning();
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+{
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure()));
+        sqlOptions => sqlOptions.EnableRetryOnFailure());
+
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+        options.LogTo(Console.WriteLine, LogLevel.Information);
+    }
+});
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {

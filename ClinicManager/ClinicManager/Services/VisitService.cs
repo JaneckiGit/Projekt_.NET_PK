@@ -76,6 +76,22 @@ public class VisitService : IVisitService
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<VisitDto>> GetTodayVisitsAsync(CancellationToken ct = default)
+    {
+        var todayStart = DateTime.Today;
+        var todayEnd = todayStart.AddDays(1);
+
+        var entities = await _db.Visits
+            .AsNoTracking()
+            .Include(v => v.Patient)
+            .Include(v => v.Doctor)
+            .Where(v => v.ScheduledAt >= todayStart && v.ScheduledAt < todayEnd)
+            .OrderBy(v => v.ScheduledAt)
+            .ToListAsync(ct);
+
+        return entities.Select(_mapper.ToDto).ToList();
+    }
+
     public async Task<VisitDto?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         var entity = await _db.Visits

@@ -149,6 +149,27 @@ public static class DataSeeder
                 CreatedAt = DateTime.UtcNow
             });
 
+            // US-16: Wizyta na dziś – ważna dla testów endpointu /api/visits/today
+            db.Visits.Add(new Visit
+            {
+                ScheduledAt = DateTime.Today.AddHours(9), // Today at 09:00
+                Status = VisitStatus.Planned,
+                PatientId = seededPatients[0].Id,
+                DoctorId = doctorUser.Id,
+                Notes = "Wizyta kontrolna – badania okresowe.",
+                CreatedAt = DateTime.UtcNow
+            });
+
+            db.Visits.Add(new Visit
+            {
+                ScheduledAt = DateTime.Today.AddHours(14).AddMinutes(30), // Today at 14:30
+                Status = VisitStatus.InProgress,
+                PatientId = seededPatients[2].Id,
+                DoctorId = doctorUser.Id,
+                Notes = "Konsultacja specjalistyczna – ortopedia.",
+                CreatedAt = DateTime.UtcNow
+            });
+
             await db.SaveChangesAsync();
         }
     }

@@ -48,6 +48,20 @@ public class VisitsController : Controller
         return Ok(result);
     }
 
+    /// <summary>
+    /// Returns all visits scheduled for today (US-16 SQL Profiler endpoint).
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>List of today's visits with patient and doctor details.</returns>
+    [HttpGet("api/visits/today")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IEnumerable<VisitDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<VisitDto>>> GetTodayVisits(CancellationToken ct)
+    {
+        var visits = await _visits.GetTodayVisitsAsync(ct);
+        return Ok(visits);
+    }
+
     [HttpGet]
     [Authorize(Roles = ViewVisitsRoles)]
     public async Task<IActionResult> Index(VisitListFilterDto filter, CancellationToken ct)
