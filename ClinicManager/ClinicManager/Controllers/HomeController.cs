@@ -17,6 +17,10 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
+        if (User.IsInRole(Roles.Admin)) return RedirectToAction("Index", "Admin");
+        if (User.IsInRole(Roles.Lekarz)) return RedirectToAction("Index", "Doctor");
+        if (User.IsInRole(Roles.Rejestratorka)) return RedirectToAction("Index", "Reception");
+
         return View();
     }
 

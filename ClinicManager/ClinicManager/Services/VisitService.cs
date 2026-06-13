@@ -65,6 +65,19 @@ public class VisitService : IVisitService
         return entities.Select(_mapper.ToDto).ToList();
     }
 
+    public async Task<IReadOnlyList<VisitDto>> GetForPatientAsync(int patientId, CancellationToken ct = default)
+    {
+        var entities = await _db.Visits
+            .AsNoTracking()
+            .Include(v => v.Patient)
+            .Include(v => v.Doctor)
+            .Where(v => v.PatientId == patientId)
+            .OrderByDescending(v => v.ScheduledAt)
+            .ToListAsync(ct);
+
+        return entities.Select(_mapper.ToDto).ToList();
+    }
+
     public async Task<IEnumerable<Visit>> GetActiveVisitsAsync()
     {
         return await _db.Visits
@@ -143,6 +156,24 @@ public class VisitService : IVisitService
         await _db.SaveChangesAsync(ct);
 
         _logger.LogInformation("Visit {VisitId} updated", entity.Id);
+        return true;
+    }
+
+    public async Task<bool> ChangeStatusAsync(int id, VisitStatus status, CancellationToken ct = default)
+    {
+        var entity = await _db.Visits.FirstOrDefaultAsync(v => v.Id == id, ct);
+        if (entity is null) return false;
+
+        var previousStatus = entity.Status;
+        entity.Status = status;
+        entity.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync(ct);
+
+        _logger.LogInformation(
+            "Visit {VisitId} status changed from {PreviousStatus} to {NewStatus}",
+            entity.Id, previousStatus, status);
+
         return true;
     }
 

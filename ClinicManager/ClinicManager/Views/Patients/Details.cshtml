@@ -1,10 +1,32 @@
-@model PatientDto
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@using ClinicManager.Models.Enums
+@using ClinicManager.Models.ViewModels
+@model PatientDetailsViewModel
 @{
-    ViewData["Title"] = $"Pacjent: {Model.FirstName} {Model.LastName}";
+    var patient = Model.Patient;
+    ViewData["Title"] = $"Pacjent: {patient.FirstName} {patient.LastName}";
     var canUploadScan = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Rejestratorka);
+    var canManageVisits = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Rejestratorka);
+
+    string DisplayEnum(Enum value)
+    {
+        var name = value.ToString();
+        var member = value.GetType().GetMember(name).FirstOrDefault();
+        return member?.GetCustomAttribute<DisplayAttribute>()?.Name ?? name;
+    }
+
+    string StatusBadge(VisitStatus status) => status switch
+    {
+        VisitStatus.Planned => "bg-primary",
+        VisitStatus.InProgress => "bg-warning text-dark",
+        VisitStatus.Completed => "bg-success",
+        VisitStatus.Cancelled => "bg-secondary",
+        _ => "bg-light text-dark"
+    };
 }
 
-<h2>@Model.FirstName @Model.LastName</h2>
+<h2>@patient.FirstName @patient.LastName</h2>
 
 @if (TempData["Success"] is string success)
 {
@@ -18,45 +40,89 @@
 
 <dl class="row">
     <dt class="col-sm-3">PESEL</dt>
-    <dd class="col-sm-9">@Model.Pesel</dd>
+    <dd class="col-sm-9">@patient.Pesel</dd>
 
     <dt class="col-sm-3">Nr ubezpieczenia</dt>
-    <dd class="col-sm-9">@Model.InsuranceNumber</dd>
+    <dd class="col-sm-9">@patient.InsuranceNumber</dd>
 
     <dt class="col-sm-3">Data urodzenia</dt>
-    <dd class="col-sm-9">@Model.DateOfBirth.ToString("yyyy-MM-dd")</dd>
+    <dd class="col-sm-9">@patient.DateOfBirth.ToString("yyyy-MM-dd")</dd>
 
     <dt class="col-sm-3">Telefon</dt>
-    <dd class="col-sm-9">@(Model.PhoneNumber ?? "-")</dd>
+    <dd class="col-sm-9">@(patient.PhoneNumber ?? "-")</dd>
 
     <dt class="col-sm-3">E-mail</dt>
-    <dd class="col-sm-9">@(Model.Email ?? "-")</dd>
+    <dd class="col-sm-9">@(patient.Email ?? "-")</dd>
 
     <dt class="col-sm-3">Adres</dt>
-    <dd class="col-sm-9">@(Model.Address ?? "-")</dd>
+    <dd class="col-sm-9">@(patient.Address ?? "-")</dd>
 
     <dt class="col-sm-3">Utworzono</dt>
-    <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+    <dd class="col-sm-9">@patient.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
 
-    @if (Model.UpdatedAt.HasValue)
+    @if (patient.UpdatedAt.HasValue)
     {
         <dt class="col-sm-3">Ostatnia aktualizacja</dt>
-        <dd class="col-sm-9">@Model.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+        <dd class="col-sm-9">@patient.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
     }
 </dl>
 
 <div class="d-flex gap-2 mb-4">
     @if (User.IsInRole("Lekarz") || User.IsInRole("Admin"))
     {
-        <a asp-controller="MedicalRecords" asp-action="Details" asp-route-patientId="@Model.Id" class="btn btn-success">
+        <a asp-controller="MedicalRecords" asp-action="Details" asp-route-patientId="@patient.Id" class="btn btn-success">
             Kartoteka medyczna
         </a>
     }
     @if (User.IsInRole("Rejestratorka") || User.IsInRole("Admin"))
     {
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edytuj</a>
+        <a asp-action="Edit" asp-route-id="@patient.Id" class="btn btn-primary">Edytuj</a>
     }
     <a asp-action="Index" class="btn btn-secondary">Powrót</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Wizyty pacjenta</strong>
+        @if (canManageVisits)
+        {
+            <a asp-controller="Visits" asp-action="Create" asp-route-patientId="@patient.Id"
+               class="btn btn-sm btn-primary">Zaplanuj wizytę</a>
+        }
+    </div>
+    <div class="card-body">
+        @if (!Model.Visits.Any())
+        {
+            <div class="alert alert-info mb-0">Pacjent nie ma jeszcze żadnych wizyt.</div>
+        }
+        else
+        {
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Termin</th>
+                        <th>Lekarz</th>
+                        <th>Status</th>
+                        <th class="text-end">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var v in Model.Visits)
+                    {
+                        <tr>
+                            <td>@v.ScheduledAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@v.DoctorDisplayName</td>
+                            <td><span class="badge @StatusBadge(v.Status)">@DisplayEnum(v.Status)</span></td>
+                            <td class="text-end">
+                                <a asp-controller="Visits" asp-action="Details" asp-route-id="@v.Id"
+                                   class="btn btn-sm btn-outline-secondary">Szczegóły</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
 </div>
 
 @if (canUploadScan)
@@ -69,7 +135,7 @@
                 dołączony do kartoteki medycznej pacjenta.
             </p>
             <form asp-action="UploadScan"
-                  asp-route-id="@Model.Id"
+                  asp-route-id="@patient.Id"
                   method="post"
                   enctype="multipart/form-data"
                   class="row g-2 align-items-end"

@@ -1,6 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using ClinicManager.DTOs;
 using ClinicManager.Mappers;
 using ClinicManager.Models;
+using ClinicManager.Models.Enums;
 using ClinicManager.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -96,14 +99,20 @@ public class VisitsController : Controller
 
     [HttpGet]
     [Authorize(Roles = ManageVisitsRoles)]
-    public async Task<IActionResult> Create(CancellationToken ct)
+    public async Task<IActionResult> Create(int? patientId, CancellationToken ct)
     {
-        await PopulateFormSelectsAsync(ct);
+        await PopulateFormSelectsAsync(ct, selectedPatientId: patientId);
 
         var form = new VisitFormDto
         {
             ScheduledAt = DateTime.Now.Date.AddDays(1).AddHours(9)
         };
+
+        if (patientId.HasValue && await _visits.PatientExistsAsync(patientId.Value, ct))
+        {
+            form.PatientId = patientId.Value;
+        }
+
         return View(form);
     }
 
@@ -156,6 +165,24 @@ public class VisitsController : Controller
         if (!ok) return NotFound();
 
         TempData["Success"] = "Zaktualizowano wizytę.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = ViewVisitsRoles)]
+    public async Task<IActionResult> ChangeStatus(int id, VisitStatus status, CancellationToken ct)
+    {
+        if (!Enum.IsDefined(status))
+        {
+            TempData["Error"] = "Nieprawidłowy status wizyty.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var ok = await _visits.ChangeStatusAsync(id, status, ct);
+        if (!ok) return NotFound();
+
+        TempData["Success"] = $"Zmieniono status wizyty na: {DisplayStatus(status)}.";
         return RedirectToAction(nameof(Details), new { id });
     }
 
@@ -240,5 +267,11 @@ public class VisitsController : Controller
         {
             ModelState.AddModelError(nameof(dto.DoctorId), "Wybrany użytkownik nie jest lekarzem.");
         }
+    }
+
+    private static string DisplayStatus(VisitStatus status)
+    {
+        var member = typeof(VisitStatus).GetMember(status.ToString()).FirstOrDefault();
+        return member?.GetCustomAttribute<DisplayAttribute>()?.Name ?? status.ToString();
     }
 }
