@@ -89,7 +89,7 @@ public class UpcomingVisitsReportBackgroundService : BackgroundService
                            $"Liczba wizyt: {visits.Count}.";
 
             var pdfBytes = pdfService.GenerateUpcomingVisitsReportPdf(visits, tomorrow);
-            var fileName = $"upcoming_visits_{tomorrow:yyyy-MM-dd}.pdf";
+            var fileName = $"raport-nadchodzace-wizyty_{tomorrow:yyyy-MM-dd}.pdf";
             var attachment = new Attachment(new MemoryStream(pdfBytes), fileName, "application/pdf");
             message.Attachments.Add(attachment);
         }
