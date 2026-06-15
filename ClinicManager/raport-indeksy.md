@@ -115,16 +115,12 @@ ON [MedicalRecordAccessLogs] ([UserId]);
 
 ## 6. Screenshoty Query Plan
 
-> **UWAGA**: Poniżej należy wkleić screenshoty z SSMS / Azure Data Studio.
-> Użyj skryptów `sql/01_query_plan_before_indexes.sql` i `sql/02_query_plan_after_indexes.sql`.
-
 ### PRZED (bez nowych indeksów):
-<!-- Wklej screenshot Query Plan PRZED migracją -->
-`[Screenshot 1: Query Plan PRZED – wklej tutaj]`
+<img width="968" height="223" alt="Przed" src="https://github.com/user-attachments/assets/c53c06f6-b1ba-4d4f-a34d-c5f00c29774b" />
 
 ### PO (z nowymi indeksami):
-<!-- Wklej screenshot Query Plan PO migracji -->
-`[Screenshot 2: Query Plan PO – wklej tutaj]`
+<img width="963" height="276" alt="Po" src="https://github.com/user-attachments/assets/c9c9c2b8-65ac-4755-99f1-626a42461586" />
+
 
 ---
 
