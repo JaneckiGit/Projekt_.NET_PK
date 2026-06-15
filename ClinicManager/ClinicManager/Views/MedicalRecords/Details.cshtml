@@ -1,0 +1,244 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@model MedicalRecordDto
+@{
+    ViewData["Title"] = $"Kartoteka: {Model.PatientFirstName} {Model.PatientLastName}";
+
+    string DisplayEnum(Enum value)
+    {
+        var name = value.ToString();
+        var member = value.GetType().GetMember(name).FirstOrDefault();
+        var display = member?.GetCustomAttribute<DisplayAttribute>()?.Name;
+        return display ?? name;
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">Kartoteka medyczna</h2>
+        <div class="text-muted">
+            @Model.PatientLastName @Model.PatientFirstName <span class="text-muted">(PESEL: @Model.PatientPesel)</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Patients" asp-action="Details" asp-route-id="@Model.PatientId" class="btn btn-outline-secondary">
+            Powrot do pacjenta
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+@if (TempData["UploadError"] is string uploadError)
+{
+    <div class="alert alert-danger">
+        <strong>Blad przesylania pliku:</strong> @uploadError
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Podsumowanie</strong>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-patientId="@Model.PatientId" class="btn btn-sm btn-primary">Edytuj</a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="AccessLog" asp-route-patientId="@Model.PatientId" class="btn btn-sm btn-outline-secondary">
+                    Log dostepow
+                </a>
+            }
+            <a asp-action="Delete" asp-route-patientId="@Model.PatientId" class="btn btn-sm btn-outline-danger">
+                Usun kartoteke
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Grupa krwi</dt>
+            <dd class="col-sm-9">@DisplayEnum(Model.BloodType)</dd>
+
+            <dt class="col-sm-3">Alergie</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Allergies) ? "-" : Model.Allergies)</dd>
+
+            <dt class="col-sm-3">Choroby przewlekle</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.ChronicConditions) ? "-" : Model.ChronicConditions)</dd>
+
+            <dt class="col-sm-3">Stale leki</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.CurrentMedications) ? "-" : Model.CurrentMedications)</dd>
+
+            <dt class="col-sm-3">Uwagi</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Notes) ? "-" : Model.Notes)</dd>
+
+            <dt class="col-sm-3">Utworzono</dt>
+            <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+
+            @if (Model.UpdatedAt.HasValue)
+            {
+                <dt class="col-sm-3">Ostatnia aktualizacja</dt>
+                <dd class="col-sm-9">@Model.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+            }
+        </dl>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Wpisy medyczne (@Model.Entries.Count)</strong>
+        <a asp-action="CreateEntry" asp-route-patientId="@Model.PatientId" class="btn btn-sm btn-primary">
+            Dodaj wpis
+        </a>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Entries.Any())
+        {
+            <div class="p-3 text-muted">Brak wpisow w kartotece.</div>
+        }
+        else
+        {
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Typ</th>
+                        <th>Tytul</th>
+                        <th>Autor</th>
+                        <th class="text-end">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in Model.Entries)
+                    {
+                        <tr>
+                            <td>@entry.EntryDate.ToString("yyyy-MM-dd")</td>
+                            <td><span class="badge bg-secondary">@DisplayEnum(entry.Type)</span></td>
+                            <td>@entry.Title</td>
+                            <td>@entry.AuthorDisplayName</td>
+                            <td class="text-end">
+                                <a asp-action="EditEntry" asp-route-entryId="@entry.Id"
+                                   class="btn btn-sm btn-outline-primary">Edytuj</a>
+                                <a asp-action="DeleteEntry" asp-route-entryId="@entry.Id"
+                                   class="btn btn-sm btn-outline-danger">Usun</a>
+                            </td>
+                        </tr>
+                        @if (!string.IsNullOrWhiteSpace(entry.Content))
+                        {
+                            <tr>
+                                <td colspan="5" class="text-muted small ps-4">@entry.Content</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+
+@{
+    var canUploadScan = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Lekarz);
+    var hasScan = !string.IsNullOrWhiteSpace(Model.DocumentScanUrl);
+}
+
+<div class="card mb-4">
+    <div class="card-header"><strong>Skan dokumentu</strong></div>
+    <div class="card-body">
+        @if (hasScan)
+        {
+            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                <a asp-action="GetScan" asp-route-recordId="@Model.Id"
+                   target="_blank" rel="noopener"
+                   class="btn btn-outline-primary">
+                    Wyswietl skan
+                </a>
+                <a asp-action="GetScan" asp-route-recordId="@Model.Id"
+                   download
+                   class="btn btn-primary">
+                    Pobierz skan
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="text-muted mb-3">Brak przeslanego skanu dokumentu.</div>
+        }
+
+        @if (canUploadScan)
+        {
+            <form asp-action="UploadScan"
+                  asp-route-recordId="@Model.Id"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="row g-2 align-items-end mt-2"
+                  data-scan-upload-form>
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="patientId" value="@Model.PatientId" />
+                <div class="col-sm-8">
+                    <label for="scanFile" class="form-label">
+                        Plik (.jpg, .jpeg, .png, .pdf, max 10&nbsp;MB)
+                    </label>
+                    <input type="file" id="scanFile" name="scanFile"
+                           accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                           class="form-control" required />
+                    <div class="invalid-feedback d-block d-none" data-scan-upload-error></div>
+                </div>
+                <div class="col-sm-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        @(hasScan ? "Zastap skan" : "Przeslij skan")
+                    </button>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header"><strong>Wizyty pacjenta</strong></div>
+    <div class="card-body">
+        <div class="alert alert-info mb-0">
+            Lista wizyt.
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const MAX_BYTES = 10 * 1024 * 1024;
+            const ALLOWED_EXT = ['.jpg', '.jpeg', '.png', '.pdf'];
+            document.querySelectorAll('form[data-scan-upload-form]').forEach(function (form) {
+                const input = form.querySelector('input[type="file"][name="scanFile"]');
+                const errBox = form.querySelector('[data-scan-upload-error]');
+                form.addEventListener('submit', function (e) {
+                    if (!input || input.files.length === 0) return;
+                    const file = input.files[0];
+                    const name = (file.name || '').toLowerCase();
+                    const ext = name.substring(name.lastIndexOf('.'));
+                    let err = null;
+                    if (!ALLOWED_EXT.includes(ext)) {
+                        err = 'Niedozwolony typ pliku. Dozwolone: .jpg, .jpeg, .png, .pdf.';
+                    } else if (file.size > MAX_BYTES) {
+                        const mb = (file.size / 1024 / 1024).toFixed(2);
+                        err = 'Plik jest zbyt duzy (' + mb + ' MB). Maksymalny rozmiar to 10 MB.';
+                    }
+                    if (err) {
+                        e.preventDefault();
+                        if (errBox) {
+                            errBox.textContent = err;
+                            errBox.classList.remove('d-none');
+                        } else {
+                            alert(err);
+                        }
+                        input.classList.add('is-invalid');
+                    }
+                });
+                input?.addEventListener('change', function () {
+                    input.classList.remove('is-invalid');
+                    if (errBox) errBox.classList.add('d-none');
+                });
+            });
+        })();
+    </script>
+}

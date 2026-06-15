@@ -1,0 +1,37 @@
+@model PrescribedMedicationDto
+@{
+    ViewData["Title"] = "Usuń lek";
+}
+
+<h2>Usuń przepisany lek</h2>
+
+<div class="alert alert-warning">
+    Czy na pewno chcesz usunąć ten lek z wizyty? Operacja jest nieodwracalna.
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Lek</dt>
+    <dd class="col-sm-9">
+        @Model.MedicationName
+        @if (!string.IsNullOrWhiteSpace(Model.MedicationActiveSubstance))
+        {
+            <small class="text-muted">(@Model.MedicationActiveSubstance)</small>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Dawkowanie</dt>
+    <dd class="col-sm-9">@Model.Dosage</dd>
+
+    <dt class="col-sm-3">Ilość</dt>
+    <dd class="col-sm-9">@Model.Quantity</dd>
+
+    <dt class="col-sm-3">Koszt</dt>
+    <dd class="col-sm-9">@Model.Cost.ToString("N2") PLN</dd>
+</dl>
+
+<form asp-action="DeleteMedication" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="visitId" value="@Model.VisitId" />
+    <button type="submit" class="btn btn-danger">Usuń</button>
+    <a asp-controller="Visits" asp-action="Details" asp-route-id="@Model.VisitId" class="btn btn-secondary">Anuluj</a>
+</form>

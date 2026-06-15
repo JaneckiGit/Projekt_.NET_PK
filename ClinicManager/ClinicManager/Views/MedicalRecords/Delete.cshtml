@@ -1,0 +1,28 @@
+@model MedicalRecordDto
+@{
+    ViewData["Title"] = "Usun kartoteke";
+}
+
+<h2 class="text-danger">Usun kartoteke medyczna</h2>
+
+<div class="alert alert-warning">
+    <strong>RODO:</strong> Kartoteka zostanie oznaczona jako usunieta. Dane (w tym wpisy historyczne)
+    pozostana w bazie zgodnie z polityka retencji danych medycznych. Operacja zostanie zalogowana.
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Pacjent</dt>
+    <dd class="col-sm-9">@Model.PatientFirstName @Model.PatientLastName (PESEL: @Model.PatientPesel)</dd>
+
+    <dt class="col-sm-3">Liczba wpisow</dt>
+    <dd class="col-sm-9">@Model.Entries.Count</dd>
+
+    <dt class="col-sm-3">Utworzono</dt>
+    <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+</dl>
+
+<form asp-action="Delete" asp-route-patientId="@Model.PatientId" method="post" class="d-flex gap-2">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-danger">Tak, usun kartoteke</button>
+    <a asp-action="Details" asp-route-patientId="@Model.PatientId" class="btn btn-secondary">Anuluj</a>
+</form>

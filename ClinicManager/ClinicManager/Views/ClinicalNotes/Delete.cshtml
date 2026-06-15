@@ -1,0 +1,30 @@
+@model ClinicalNoteDto
+@{
+    ViewData["Title"] = "Usuń notatkę kliniczną";
+}
+
+<h2>Usuń notatkę kliniczną</h2>
+
+<div class="alert alert-danger">
+    <h5>Czy na pewno chcesz usunąć tę notatkę kliniczną?</h5>
+    <p class="mb-0">Ta operacja jest nieodwracalna.</p>
+</div>
+
+<div class="card border mb-3">
+    <div class="card-body">
+        <h6 class="fw-bold text-primary mb-2">Autor: @Model.AuthorDisplayName</h6>
+        <p class="text-muted small">Data utworzenia: @Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</p>
+        <hr />
+        <p class="mb-0 text-dark" style="white-space: pre-wrap;">@Model.Content</p>
+    </div>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <input type="hidden" name="visitId" value="@Model.VisitId" />
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-danger">Usuń</button>
+        <a asp-controller="Visits" asp-action="Details" asp-route-id="@Model.VisitId" class="btn btn-secondary">Anuluj</a>
+    </div>
+</form>

@@ -1,0 +1,60 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@model MedicalEntryFormDto
+@{
+    ViewData["Title"] = "Edytuj wpis";
+
+    var entryTypes = Enum.GetValues<MedicalEntryType>().Select(t =>
+    {
+        var member = typeof(MedicalEntryType).GetMember(t.ToString()).FirstOrDefault();
+        var label = member?.GetCustomAttribute<DisplayAttribute>()?.Name ?? t.ToString();
+        return new SelectListItem
+        {
+            Value = ((int)t).ToString(),
+            Text = label,
+            Selected = t == Model.Type
+        };
+    }).ToList();
+}
+
+<h2>Edycja wpisu</h2>
+
+<form asp-action="EditEntry" asp-route-entryId="@Model.Id" method="post" class="row g-3">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="PatientId" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none"></div>
+
+    <div class="col-md-4">
+        <label asp-for="EntryDate" class="form-label"></label>
+        <input asp-for="EntryDate" class="form-control" type="date" />
+        <span asp-validation-for="EntryDate" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Type" class="form-label"></label>
+        <select asp-for="Type" asp-items="entryTypes" class="form-select"></select>
+        <span asp-validation-for="Type" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" maxlength="200" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <label asp-for="Content" class="form-label"></label>
+        <textarea asp-for="Content" class="form-control" rows="6" maxlength="4000"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+    </div>
+
+    <div class="col-12 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Zapisz zmiany</button>
+        <a asp-action="Details" asp-route-patientId="@Model.PatientId" class="btn btn-secondary">Anuluj</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

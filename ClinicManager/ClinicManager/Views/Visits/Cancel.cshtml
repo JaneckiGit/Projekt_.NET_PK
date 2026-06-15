@@ -1,0 +1,39 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@model VisitDto
+@{
+    ViewData["Title"] = "Anulowanie wizyty";
+
+    string DisplayEnum(Enum value)
+    {
+        var name = value.ToString();
+        var member = value.GetType().GetMember(name).FirstOrDefault();
+        return member?.GetCustomAttribute<DisplayAttribute>()?.Name ?? name;
+    }
+}
+
+<h2>Anulować wizytę?</h2>
+
+<div class="alert alert-warning">
+    Wizyta zostanie oznaczona jako <strong>Anulowana</strong>. Rekord nie zostanie usunięty z bazy danych (soft delete).
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Termin</dt>
+    <dd class="col-sm-9">@Model.ScheduledAt.ToString("yyyy-MM-dd HH:mm")</dd>
+
+    <dt class="col-sm-3">Pacjent</dt>
+    <dd class="col-sm-9">@Model.PatientDisplayName (PESEL: @Model.PatientPesel)</dd>
+
+    <dt class="col-sm-3">Lekarz</dt>
+    <dd class="col-sm-9">@Model.DoctorDisplayName</dd>
+
+    <dt class="col-sm-3">Aktualny status</dt>
+    <dd class="col-sm-9">@DisplayEnum(Model.Status)</dd>
+</dl>
+
+<form asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-danger">Tak, anuluj wizytę</button>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Wróć</a>
+</form>

@@ -1,0 +1,301 @@
+@using System.ComponentModel.DataAnnotations
+@using System.Reflection
+@model VisitDto
+@{
+    ViewData["Title"] = $"Wizyta: {Model.PatientDisplayName}";
+    var canManage = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Rejestratorka) || User.IsInRole(Roles.Lekarz);
+
+    var procedures = ViewBag.Procedures as IReadOnlyList<ProcedurePerformedDto> ?? new List<ProcedurePerformedDto>();
+    var medications = ViewBag.Medications as IReadOnlyList<PrescribedMedicationDto> ?? new List<PrescribedMedicationDto>();
+
+    string DisplayEnum(Enum value)
+    {
+        var name = value.ToString();
+        var member = value.GetType().GetMember(name).FirstOrDefault();
+        return member?.GetCustomAttribute<DisplayAttribute>()?.Name ?? name;
+    }
+
+    string StatusBadge(VisitStatus status) => status switch
+    {
+        VisitStatus.Planned => "bg-primary",
+        VisitStatus.InProgress => "bg-warning text-dark",
+        VisitStatus.Completed => "bg-success",
+        VisitStatus.Cancelled => "bg-secondary",
+        _ => "bg-light text-dark"
+    };
+}
+
+<h2>Szczegóły wizyty</h2>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">Termin</dt>
+    <dd class="col-sm-9">@Model.ScheduledAt.ToString("yyyy-MM-dd HH:mm")</dd>
+
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9"><span class="badge @StatusBadge(Model.Status)">@DisplayEnum(Model.Status)</span></dd>
+
+    <dt class="col-sm-3">Pacjent</dt>
+    <dd class="col-sm-9">@Model.PatientDisplayName (PESEL: @Model.PatientPesel)</dd>
+
+    <dt class="col-sm-3">Lekarz</dt>
+    <dd class="col-sm-9">@Model.DoctorDisplayName</dd>
+
+    <dt class="col-sm-3">Notatki</dt>
+    <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Notes) ? "—" : Model.Notes)</dd>
+
+    <dt class="col-sm-3">Utworzono</dt>
+    <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+
+    @if (Model.UpdatedAt.HasValue)
+    {
+        <dt class="col-sm-3">Ostatnia aktualizacja</dt>
+        <dd class="col-sm-9">@Model.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+    }
+</dl>
+
+<div class="d-flex gap-2 mb-4">
+    @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Rejestratorka))
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edytuj</a>
+        @if (Model.Status != VisitStatus.Cancelled && Model.Status != VisitStatus.Completed)
+        {
+            <a asp-action="Cancel" asp-route-id="@Model.Id" class="btn btn-outline-danger">Anuluj wizytę</a>
+        }
+    }
+    @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Lekarz))
+    {
+        <a asp-action="DownloadPdf" asp-route-id="@Model.Id" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Pobierz PDF
+        </a>
+    }
+    <a asp-action="Index" class="btn btn-secondary">Powrót do listy</a>
+</div>
+
+@if (canManage)
+{
+    <div class="card mb-4">
+        <div class="card-header"><strong>Zmień status wizyty</strong></div>
+        <div class="card-body">
+            <form asp-action="ChangeStatus" asp-route-id="@Model.Id" method="post"
+                  class="row g-2 align-items-end">
+                @Html.AntiForgeryToken()
+                <div class="col-sm-6 col-md-4">
+                    <label for="status" class="form-label">Status</label>
+                    <select id="status" name="status" class="form-select">
+                        @foreach (VisitStatus s in Enum.GetValues<VisitStatus>())
+                        {
+                            if (s == Model.Status)
+                            {
+                                <option value="@((int)s)" selected>@DisplayEnum(s)</option>
+                            }
+                            else
+                            {
+                                <option value="@((int)s)">@DisplayEnum(s)</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Zapisz status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@* ──────────────────── Procedury medyczne ──────────────────── *@
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h4>Procedury medyczne</h4>
+        @if (canManage)
+        {
+            <a asp-controller="VisitProcedures" asp-action="AddProcedure"
+               asp-route-visitId="@Model.Id" class="btn btn-sm btn-outline-primary">
+                + Dodaj procedurę
+            </a>
+        }
+    </div>
+
+    @if (!procedures.Any())
+    {
+        <div class="alert alert-light border">Brak przypisanych procedur.</div>
+    }
+    else
+    {
+        <table class="table table-sm table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Nazwa procedury</th>
+                    <th>Opis</th>
+                    <th class="text-end">Koszt (PLN)</th>
+                    @if (canManage)
+                    {
+                        <th class="text-end">Akcje</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in procedures)
+                {
+                    <tr>
+                        <td>@p.Name</td>
+                        <td>@(string.IsNullOrWhiteSpace(p.Description) ? "—" : p.Description)</td>
+                        <td class="text-end">@p.Cost.ToString("N2")</td>
+                        @if (canManage)
+                        {
+                            <td class="text-end">
+                                <a asp-controller="VisitProcedures" asp-action="EditProcedure"
+                                   asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary">Edytuj</a>
+                                <a asp-controller="VisitProcedures" asp-action="DeleteProcedure"
+                                   asp-route-id="@p.Id" class="btn btn-sm btn-outline-danger">Usuń</a>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="fw-semibold">
+                    <td colspan="2" class="text-end">Suma:</td>
+                    <td class="text-end">@procedures.Sum(p => p.Cost).ToString("N2") PLN</td>
+                    @if (canManage) { <td></td> }
+                </tr>
+            </tfoot>
+        </table>
+    }
+</div>
+
+@* ──────────────────── Leki przepisane ──────────────────── *@
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h4>Leki przepisane</h4>
+        @if (canManage)
+        {
+            <a asp-controller="VisitProcedures" asp-action="AddMedication"
+               asp-route-visitId="@Model.Id" class="btn btn-sm btn-outline-primary">
+                + Dodaj lek
+            </a>
+        }
+    </div>
+
+    @if (!medications.Any())
+    {
+        <div class="alert alert-light border">Brak przepisanych leków.</div>
+    }
+    else
+    {
+        <table class="table table-sm table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Lek</th>
+                    <th>Postać</th>
+                    <th>Dawkowanie</th>
+                    <th class="text-center">Ilość</th>
+                    <th class="text-end">Koszt (PLN)</th>
+                    <th>Notatki</th>
+                    @if (canManage)
+                    {
+                        <th class="text-end">Akcje</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var m in medications)
+                {
+                    <tr>
+                        <td>
+                            @m.MedicationName
+                            @if (!string.IsNullOrWhiteSpace(m.MedicationActiveSubstance))
+                            {
+                                <small class="text-muted d-block">@m.MedicationActiveSubstance</small>
+                            }
+                        </td>
+                        <td>@(string.IsNullOrWhiteSpace(m.MedicationForm) ? "—" : m.MedicationForm)</td>
+                        <td>@m.Dosage</td>
+                        <td class="text-center">@m.Quantity</td>
+                        <td class="text-end">@m.Cost.ToString("N2")</td>
+                        <td>@(string.IsNullOrWhiteSpace(m.Notes) ? "—" : m.Notes)</td>
+                        @if (canManage)
+                        {
+                            <td class="text-end">
+                                <a asp-controller="VisitProcedures" asp-action="EditMedication"
+                                   asp-route-id="@m.Id" class="btn btn-sm btn-outline-secondary">Edytuj</a>
+                                <a asp-controller="VisitProcedures" asp-action="DeleteMedication"
+                                   asp-route-id="@m.Id" class="btn btn-sm btn-outline-danger">Usuń</a>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="fw-semibold">
+                    <td colspan="4" class="text-end">Suma:</td>
+                    <td class="text-end">@medications.Sum(m => m.Cost * m.Quantity).ToString("N2") PLN</td>
+                    <td></td>
+                    @if (canManage) { <td></td> }
+                </tr>
+            </tfoot>
+        </table>
+    }
+</div>
+
+@* ──────────────────── Notatki kliniczne ──────────────────── *@
+@if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Lekarz))
+{
+    var clinicalNotes = ViewBag.ClinicalNotes as IReadOnlyList<ClinicalNoteDto> ?? new List<ClinicalNoteDto>();
+
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4>Notatki kliniczne</h4>
+            <a asp-controller="ClinicalNotes" asp-action="Add"
+               asp-route-visitId="@Model.Id" class="btn btn-sm btn-outline-primary">
+                + Dodaj notatkę kliniczną
+            </a>
+        </div>
+
+        @if (!clinicalNotes.Any())
+        {
+            <div class="alert alert-light border">Brak notatek klinicznych dla tej wizyty.</div>
+        }
+        else
+        {
+            <div class="list-group">
+                @foreach (var note in clinicalNotes)
+                {
+                    <div class="list-group-item list-group-item-action flex-column align-items-start border mb-2 rounded p-3">
+                        <div class="d-flex w-100 justify-content-between mb-2">
+                            <h6 class="mb-1 fw-bold text-primary">
+                                <i class="bi bi-person-fill me-1"></i> Autor: @note.AuthorDisplayName
+                            </h6>
+                            <small class="text-muted">
+                                @note.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                @if (note.UpdatedAt.HasValue)
+                                {
+                                    <span class="ms-1 text-warning" title="Edytowano: @note.UpdatedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")">(edytowana)</span>
+                                }
+                            </small>
+                        </div>
+                        <p class="mb-2 text-dark" style="white-space: pre-wrap;">@note.Content</p>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-controller="ClinicalNotes" asp-action="Edit" asp-route-id="@note.Id" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                                Edytuj
+                            </a>
+                            <a asp-controller="ClinicalNotes" asp-action="Delete" asp-route-id="@note.Id" class="btn btn-sm btn-outline-danger py-0 px-2">
+                                Usuń
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}

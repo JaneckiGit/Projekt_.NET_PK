@@ -1,0 +1,34 @@
+@model ClinicalNoteFormDto
+@{
+    ViewData["Title"] = "Dodaj notatkę kliniczną";
+    var visitId = ViewBag.VisitId;
+}
+
+<h2>Dodaj notatkę kliniczną</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border shadow-sm">
+            <div class="card-body">
+                <form asp-action="Add" method="post">
+                    <input type="hidden" name="visitId" value="@visitId" />
+
+                    <div class="mb-3">
+                        <label asp-for="Content" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Content" class="form-control" rows="8" placeholder="Wpisz treść notatki klinicznej (wywiad, rozpoznanie, zalecenia)..."></textarea>
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">Zapisz</button>
+                        <a asp-controller="Visits" asp-action="Details" asp-route-id="@visitId" class="btn btn-secondary">Anuluj</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
