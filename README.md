@@ -41,6 +41,51 @@ Główne etapy pipeline'u uruchamiane przy każdym *pushu* lub *pull requeście*
 1. **Build** (`dotnet build`) – sprawdzanie, czy projekt kompiluje się bez błędów.
 2. **Test** (`dotnet test`) – automatyczne wykonywanie testów jednostkowych i integracyjnych.
 
+## Role i uprawnienia
+
+System definiuje trzy role (`Models/Roles.cs`). Każda strona wymaga zalogowania (globalna polityka `FallbackPolicy`).
+
+### Admin
+Pełen dostęp do całego systemu.
+
+| Moduł | Uprawnienia |
+|---|---|
+| Panel administracyjny | Dashboard, raport finansowy (HTML + PDF) |
+| Pacjenci | Przeglądanie, dodawanie, edycja, usuwanie (soft delete), upload skanów |
+| Kartoteka medyczna | Przeglądanie, edycja podsumowania, wpisy (CRUD), usuwanie kartoteki (soft delete), upload skanów, **log dostępu** (wyłącznie Admin) |
+| Wizyty | Przeglądanie listy i szczegółów, tworzenie, edycja, anulowanie, zmiana statusu, pobieranie PDF |
+| Procedury przy wizycie | Dodawanie, edycja, usuwanie procedur wykonanych i leków przepisanych |
+| Notatki kliniczne | Dodawanie, edycja, usuwanie |
+| Katalog procedur | CRUD (wyłącznie Admin) |
+| Katalog leków | Przeglądanie, dodawanie, edycja, usuwanie |
+
+### Lekarz
+Dostęp do danych medycznych pacjentów i zarządzania wizytami.
+
+| Moduł | Uprawnienia |
+|---|---|
+| Panel lekarza | Dashboard |
+| Pacjenci | Przeglądanie listy i szczegółów (bez tworzenia/edycji/usuwania) |
+| Kartoteka medyczna | Przeglądanie, edycja podsumowania, wpisy (CRUD), usuwanie kartoteki (soft delete), upload skanów |
+| Wizyty | Przeglądanie listy i szczegółów, zmiana statusu, pobieranie PDF (bez tworzenia/edycji/anulowania) |
+| Procedury przy wizycie | Dodawanie, edycja, usuwanie procedur wykonanych i leków przepisanych |
+| Notatki kliniczne | Dodawanie, edycja, usuwanie |
+
+### Rejestratorka
+Zarządzanie pacjentami i planowanie wizyt — bez dostępu do danych medycznych.
+
+| Moduł | Uprawnienia |
+|---|---|
+| Panel recepcji | Dashboard |
+| Pacjenci | Przeglądanie, dodawanie, edycja, usuwanie (soft delete), upload skanów |
+| Wizyty | Przeglądanie listy i szczegółów, tworzenie, edycja, anulowanie, zmiana statusu (bez PDF) |
+| Procedury przy wizycie | Dodawanie, edycja, usuwanie procedur wykonanych i leków przepisanych |
+| Katalog leków | Przeglądanie, dodawanie, edycja, usuwanie |
+| Kartoteka medyczna | Brak dostępu |
+| Notatki kliniczne | Brak dostępu |
+| Katalog procedur | Brak dostępu |
+| Raport finansowy | Brak dostępu |
+
 ## Dane logowania
 
 | Rola         | E-mail                        | Hasło        |
